@@ -9,10 +9,11 @@ from mpl_toolkits.mplot3d import Axes3D
 from nltk.stem import WordNetLemmatizer
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV
 
 
 def tokenizer(text):
@@ -371,6 +372,26 @@ def roc_curve_own(model, X, y):
     plt.show()
 
 
+def grid_search_best_params():
+    """
+    поиск оптимальных параметров svc модели
+    :return: 
+    """
+    param_grid = {'C': [0.1, 1, 10, 100, 1000],
+                  'gamma': [1, 0.1, 0.01, 0.001, 0.0001],
+                  'kernel': ['rbf']}
+
+    grid = GridSearchCV(SVC(), param_grid, refit=True, verbose=3)
+
+    grid.fit(X_train, y_train)
+
+    print(grid.best_params_)
+    print(grid.best_estimator_)
+
+    grid_predictions = grid.predict(X_test)
+    print(classification_report(y_test, grid_predictions))
+
+
 start_time = time.time()
 
 glove_dir = 'D:\\datasets\\glove.6B'
@@ -399,6 +420,8 @@ scaler = StandardScaler().fit_transform(X)
 # разделение выборки на тренировочную и тестовую
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
 
+grid_search_best_params()
+
 # region двумерный график tsne
 # построение графика сниженной размерности
 # a = np.append(X_test[:50], X_test[-50:], axis=0)
@@ -418,7 +441,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random
 # endregion
 
 # nonlinear svm
-clf_SVC = SVC(C=0.1, kernel='linear', degree=3, gamma='auto', coef0=0.0, shrinking=True,
+clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma=1, coef0=0.0, shrinking=True,
               probability=False, tol=0.001, cache_size=1000, class_weight=None,
               verbose=True, max_iter=-1, decision_function_shape="ovr", random_state=0)
 clf_SVC.fit(X_train, y_train)
