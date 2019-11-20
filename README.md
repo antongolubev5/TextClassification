@@ -11,7 +11,7 @@ https://www.kaggle.com/crawford/20-newsgroups
 * tf-idf representation
 
 Данные и векторные представления слов:
-https://yadi.sk/d/8AoxEBOzCkWtjw
+* https://yadi.sk/d/8AoxEBOzCkWtjw
 
 Сравнение методов классификации текстов:
 * SVM для бинарной классификации 
