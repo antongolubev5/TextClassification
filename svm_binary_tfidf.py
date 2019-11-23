@@ -6,12 +6,14 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
+from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.manifold import TSNE
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -22,11 +24,8 @@ from tok import word_tokenize
 def tokenizer(text):
     """
     форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
+    regexp, stop_words, lowercase, stemmer
     """
-    # regexp, stop_words, lowercase, stemmer
-    f = open('english_stop_words', 'r')
-    stop_words = [line.strip() for line in f]
-
     ps = PorterStemmer()
     result = word_tokenize(text)
     drop = []
@@ -187,6 +186,7 @@ def tf_idf_representation(csv_file):
     corpus = list(texts)
     vectorizer = TfidfVectorizer(ngram_range=[1, 2], decode_error='ignore', lowercase=True, stop_words='english',
                                  min_df=0.02)
+    # vectorizer = TfidfVectorizer(stop_words="english", decode_error='ignore', lowercase=True, ngram_range=(1, 2))
     representations = vectorizer.fit_transform(corpus).toarray()
 
     return representations, labels
@@ -197,6 +197,7 @@ start_time = time.time()
 imdb_dir: str = 'D:\\datasets\\aclImdb'
 train_dir = os.path.join(imdb_dir, 'train')
 test_dir = os.path.join(imdb_dir, 'test')
+stop_words = set(stopwords.words('english'))
 
 # region make_csv
 # Xy_train = csv_from_txts(train_dir)
@@ -224,9 +225,10 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random
 # endregion
 
 # nonlinear svm
-clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma=1, coef0=0.0, shrinking=True,
-              probability=False, tol=0.001, cache_size=1000, class_weight=None,
-              verbose=True, max_iter=-1, decision_function_shape="ovr", random_state=0)
+# clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma=1, coef0=0.0, shrinking=True,
+#                     probability=False, tol=0.001, cache_size=1000, class_weight=None,
+#                     verbose=True, max_iter=-1, decision_function_shape="ovr", random_state=0)
+clf_SVC = SVC()
 clf_SVC.fit(X_train, y_train)
 
 print('Accuracy of SVC on training set: {:.2f}'.format(clf_SVC.score(X_train, y_train) * 100))
@@ -236,7 +238,7 @@ print('Accuracy of SVC on test set: {:.2f}'.format(clf_SVC.score(X_test, y_test)
 # roc_curve_own(clf_SVC, X_test, y_test)
 
 # confusion_matrix
-# conf_matrix = confusion_matrix(clf_SVC.predict(X_test), y_test)
+conf_matrix = confusion_matrix(clf_SVC.predict(X_test), y_test)
 
 total_time = round((time.time() - start_time))
 print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
