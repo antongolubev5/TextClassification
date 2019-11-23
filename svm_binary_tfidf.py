@@ -23,7 +23,7 @@ from tok import word_tokenize
 
 def tokenizer(text):
     """
-    форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
+    ГґГ®Г°Г¬Г ГІГЁГ°Г®ГўГ Г­ГЁГҐ Г±ГІГ°Г®ГЄГЁ https://github.com/kootenpv/tok/blob/master/README.md
     regexp, stop_words, lowercase, stemmer
     """
     ps = PorterStemmer()
@@ -38,7 +38,7 @@ def tokenizer(text):
 
 def tokenizer_tfidf(text):
     """
-    форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
+    ГґГ®Г°Г¬Г ГІГЁГ°Г®ГўГ Г­ГЁГҐ Г±ГІГ°Г®ГЄГЁ https://github.com/kootenpv/tok/blob/master/README.md
     """
     # regexp, stop_words, lowercase, stemmer
     f = open('english_stop_words', 'r')
@@ -56,10 +56,10 @@ def tokenizer_tfidf(text):
 
 def csv_from_txts(directory):
     """
-    Загрузка данных в csv file.
-    Берем средний вектор всего документа для получения более низкой размерности
-    :param directory: директория с файлами
-    :return: обучающая и тренировочная выборки
+    Г‡Г ГЈГ°ГіГ§ГЄГ  Г¤Г Г­Г­Г»Гµ Гў csv file.
+    ГЃГҐГ°ГҐГ¬ Г±Г°ГҐГ¤Г­ГЁГ© ГўГҐГЄГІГ®Г° ГўГ±ГҐГЈГ® Г¤Г®ГЄГіГ¬ГҐГ­ГІГ  Г¤Г«Гї ГЇГ®Г«ГіГ·ГҐГ­ГЁГї ГЎГ®Г«ГҐГҐ Г­ГЁГ§ГЄГ®Г© Г°Г Г§Г¬ГҐГ°Г­Г®Г±ГІГЁ
+    :param directory: Г¤ГЁГ°ГҐГЄГІГ®Г°ГЁГї Г± ГґГ Г©Г«Г Г¬ГЁ
+    :return: Г®ГЎГіГ·Г ГѕГ№Г Гї ГЁ ГІГ°ГҐГ­ГЁГ°Г®ГўГ®Г·Г­Г Гї ГўГ»ГЎГ®Г°ГЄГЁ
     """
     df = pd.DataFrame(columns=['text', 'label'])
     num = 0
@@ -77,7 +77,7 @@ def csv_from_txts(directory):
 
 def dim_reduction_plot(X, y):
     """
-    построение трехмерного графика сниженной размерности
+    ГЇГ®Г±ГІГ°Г®ГҐГ­ГЁГҐ ГІГ°ГҐГµГ¬ГҐГ°Г­Г®ГЈГ® ГЈГ°Г ГґГЁГЄГ  Г±Г­ГЁГ¦ГҐГ­Г­Г®Г© Г°Г Г§Г¬ГҐГ°Г­Г®Г±ГІГЁ
     :param X:
     :param y:
     :return:
@@ -99,12 +99,12 @@ def dim_reduction_plot(X, y):
 
 def dim_reduction_plot_tsne(X, y):
     """
-    Стохастическое вложение соседей с t-распределением (англ. t-distributed Stochastic Neighbor Embedding, t-SNE) —
-    это алгоритм машинного обучения для визуализации, разработанный Лоренсом ван дер Маатеном и Джеффри Хинтоном.
-    Он является техникой нелинейного снижения размерности, хорошо подходящей для вложения данных высокой размерности
-    для визуализации в пространство низкой размерности (двух- или трехмерное). В частности, метод моделирует каждый
-    объект высокой размерности двух- или трёхмерной точкой таким образом, что похожие объекты моделируются близко
-    расположенными точками, а непохожие точки моделируются с большой P точками, далеко друг от друга отстоящими.
+    Г‘ГІГ®ГµГ Г±ГІГЁГ·ГҐГ±ГЄГ®ГҐ ГўГ«Г®Г¦ГҐГ­ГЁГҐ Г±Г®Г±ГҐГ¤ГҐГ© Г± t-Г°Г Г±ГЇГ°ГҐГ¤ГҐГ«ГҐГ­ГЁГҐГ¬ (Г Г­ГЈГ«. t-distributed Stochastic Neighbor Embedding, t-SNE) вЂ”
+    ГЅГІГ® Г Г«ГЈГ®Г°ГЁГІГ¬ Г¬Г ГёГЁГ­Г­Г®ГЈГ® Г®ГЎГіГ·ГҐГ­ГЁГї Г¤Г«Гї ГўГЁГ§ГіГ Г«ГЁГ§Г Г¶ГЁГЁ, Г°Г Г§Г°Г ГЎГ®ГІГ Г­Г­Г»Г© Г‹Г®Г°ГҐГ­Г±Г®Г¬ ГўГ Г­ Г¤ГҐГ° ГЊГ Г ГІГҐГ­Г®Г¬ ГЁ Г„Г¦ГҐГґГґГ°ГЁ Г•ГЁГ­ГІГ®Г­Г®Г¬.
+    ГЋГ­ ГїГўГ«ГїГҐГІГ±Гї ГІГҐГµГ­ГЁГЄГ®Г© Г­ГҐГ«ГЁГ­ГҐГ©Г­Г®ГЈГ® Г±Г­ГЁГ¦ГҐГ­ГЁГї Г°Г Г§Г¬ГҐГ°Г­Г®Г±ГІГЁ, ГµГ®Г°Г®ГёГ® ГЇГ®Г¤ГµГ®Г¤ГїГ№ГҐГ© Г¤Г«Гї ГўГ«Г®Г¦ГҐГ­ГЁГї Г¤Г Г­Г­Г»Гµ ГўГ»Г±Г®ГЄГ®Г© Г°Г Г§Г¬ГҐГ°Г­Г®Г±ГІГЁ
+    Г¤Г«Гї ГўГЁГ§ГіГ Г«ГЁГ§Г Г¶ГЁГЁ Гў ГЇГ°Г®Г±ГІГ°Г Г­Г±ГІГўГ® Г­ГЁГ§ГЄГ®Г© Г°Г Г§Г¬ГҐГ°Г­Г®Г±ГІГЁ (Г¤ГўГіГµ- ГЁГ«ГЁ ГІГ°ГҐГµГ¬ГҐГ°Г­Г®ГҐ). Г‚ Г·Г Г±ГІГ­Г®Г±ГІГЁ, Г¬ГҐГІГ®Г¤ Г¬Г®Г¤ГҐГ«ГЁГ°ГіГҐГІ ГЄГ Г¦Г¤Г»Г©
+    Г®ГЎГєГҐГЄГІ ГўГ»Г±Г®ГЄГ®Г© Г°Г Г§Г¬ГҐГ°Г­Г®Г±ГІГЁ Г¤ГўГіГµ- ГЁГ«ГЁ ГІГ°ВёГµГ¬ГҐГ°Г­Г®Г© ГІГ®Г·ГЄГ®Г© ГІГ ГЄГЁГ¬ Г®ГЎГ°Г Г§Г®Г¬, Г·ГІГ® ГЇГ®ГµГ®Г¦ГЁГҐ Г®ГЎГєГҐГЄГІГ» Г¬Г®Г¤ГҐГ«ГЁГ°ГіГѕГІГ±Гї ГЎГ«ГЁГ§ГЄГ®
+    Г°Г Г±ГЇГ®Г«Г®Г¦ГҐГ­Г­Г»Г¬ГЁ ГІГ®Г·ГЄГ Г¬ГЁ, Г  Г­ГҐГЇГ®ГµГ®Г¦ГЁГҐ ГІГ®Г·ГЄГЁ Г¬Г®Г¤ГҐГ«ГЁГ°ГіГѕГІГ±Гї Г± ГЎГ®Г«ГјГёГ®Г© P ГІГ®Г·ГЄГ Г¬ГЁ, Г¤Г Г«ГҐГЄГ® Г¤Г°ГіГЈ Г®ГІ Г¤Г°ГіГЈГ  Г®ГІГ±ГІГ®ГїГ№ГЁГ¬ГЁ.
     """
     x_reduced = TSNE(n_components=2).fit_transform(X)
     sns.scatterplot(x_reduced[:, 0], x_reduced[:, 1], hue=y, legend='full')
@@ -112,17 +112,17 @@ def dim_reduction_plot_tsne(X, y):
 
 def roc_curve_own(model, X, y):
     """
-    построение roc-кривой модели, изменяемый параметр - w_0
-    :param model: обученная модель
-    :param X: признаки
-    :param y: ответы
-    :return: график roc-кривой
+    ГЇГ®Г±ГІГ°Г®ГҐГ­ГЁГҐ roc-ГЄГ°ГЁГўГ®Г© Г¬Г®Г¤ГҐГ«ГЁ, ГЁГ§Г¬ГҐГ­ГїГҐГ¬Г»Г© ГЇГ Г°Г Г¬ГҐГІГ° - w_0
+    :param model: Г®ГЎГіГ·ГҐГ­Г­Г Гї Г¬Г®Г¤ГҐГ«Гј
+    :param X: ГЇГ°ГЁГ§Г­Г ГЄГЁ
+    :param y: Г®ГІГўГҐГІГ»
+    :return: ГЈГ°Г ГґГЁГЄ roc-ГЄГ°ГЁГўГ®Г©
     """
-    roc_array = np.zeros((len(X), 2))  # сверху fpr, снизу tpr
-    a_y = np.zeros((len(X), 2))  # сверху decision_function(x_i), снизу метка класса
+    roc_array = np.zeros((len(X), 2))  # Г±ГўГҐГ°ГµГі fpr, Г±Г­ГЁГ§Гі tpr
+    a_y = np.zeros((len(X), 2))  # Г±ГўГҐГ°ГµГі decision_function(x_i), Г±Г­ГЁГ§Гі Г¬ГҐГІГЄГ  ГЄГ«Г Г±Г±Г 
     m = np.zeros(len(X))
 
-    # сортировка двумерного массива по строке m
+    # Г±Г®Г°ГІГЁГ°Г®ГўГЄГ  Г¤ГўГіГ¬ГҐГ°Г­Г®ГЈГ® Г¬Г Г±Г±ГЁГўГ  ГЇГ® Г±ГІГ°Г®ГЄГҐ m
     m = model.decision_function(X)
     a_y[:, 0] = np.array(m.T).astype(float)  # np.ravel(m.T)
     a_y[:, 1] = y.T
@@ -130,7 +130,7 @@ def roc_curve_own(model, X, y):
     l_a_y = sorted(l_a_y, key=lambda x: x[0])
     a_y_sorted = np.asarray(l_a_y)
 
-    # заполняем roc_array tpr и fpr
+    # Г§Г ГЇГ®Г«Г­ГїГҐГ¬ roc_array tpr ГЁ fpr
     if a_y_sorted[len(X) - 1, 1] == 0:
         roc_array[len(X) - 1, 0] = 1
     else:
@@ -160,7 +160,7 @@ def roc_curve_own(model, X, y):
 
 def grid_search_best_params():
     """
-    поиск оптимальных параметров svc модели
+    ГЇГ®ГЁГ±ГЄ Г®ГЇГІГЁГ¬Г Г«ГјГ­Г»Гµ ГЇГ Г°Г Г¬ГҐГІГ°Г®Гў svc Г¬Г®Г¤ГҐГ«ГЁ
     :return:
     """
     param_grid = {'C': [0.1, 1, 10, 100, 1000],
@@ -194,31 +194,35 @@ def tf_idf_representation(csv_file):
 
 start_time = time.time()
 
-imdb_dir: str = 'D:\\datasets\\aclImdb'
-train_dir = os.path.join(imdb_dir, 'train')
-test_dir = os.path.join(imdb_dir, 'test')
-stop_words = set(stopwords.words('english'))
-
+if('DESKTOP-TF87PFA' in os.environ['COMPUTERNAME'] ):
+    glove_dir = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\glove.6B'
+    imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
+    train_dir = os.path.join(imdb_dir, 'train')
+    test_dir = os.path.join(imdb_dir, 'test')
+else:
+    imdb_dir: str = 'D:\\datasets\\aclImdb'
+    train_dir = os.path.join(imdb_dir, 'train')
+    test_dir = os.path.join(imdb_dir, 'test')
 # region make_csv
 # Xy_train = csv_from_txts(train_dir)
 # Xy_test = csv_from_txts(test_dir)
 # pd.DataFrame(np.append(Xy_train, Xy_test, axis=0)).to_csv("imdb.csv")
 # endregion
 
-# загрузка данных, формирование тренировочной и тестовой выборок
+# Г§Г ГЈГ°ГіГ§ГЄГ  Г¤Г Г­Г­Г»Гµ, ГґГ®Г°Г¬ГЁГ°Г®ГўГ Г­ГЁГҐ ГІГ°ГҐГ­ГЁГ°Г®ГўГ®Г·Г­Г®Г© ГЁ ГІГҐГ±ГІГ®ГўГ®Г© ГўГ»ГЎГ®Г°Г®ГЄ
 imdb_data = pd.read_csv('imdb.csv')
 X, y = tf_idf_representation(imdb_data)
 
-# масштабирование выборок
+# Г¬Г Г±ГёГІГ ГЎГЁГ°Г®ГўГ Г­ГЁГҐ ГўГ»ГЎГ®Г°Г®ГЄ
 scaler = StandardScaler().fit_transform(X)
 
-# разделение выборки на тренировочную и тестовую
+# Г°Г Г§Г¤ГҐГ«ГҐГ­ГЁГҐ ГўГ»ГЎГ®Г°ГЄГЁ Г­Г  ГІГ°ГҐГ­ГЁГ°Г®ГўГ®Г·Г­ГіГѕ ГЁ ГІГҐГ±ГІГ®ГўГіГѕ
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
 
 # grid_search_best_params()
 
-# region двумерный график tsne
-# построение графика сниженной размерности
+# region Г¤ГўГіГ¬ГҐГ°Г­Г»Г© ГЈГ°Г ГґГЁГЄ tsne
+# ГЇГ®Г±ГІГ°Г®ГҐГ­ГЁГҐ ГЈГ°Г ГґГЁГЄГ  Г±Г­ГЁГ¦ГҐГ­Г­Г®Г© Г°Г Г§Г¬ГҐГ°Г­Г®Г±ГІГЁ
 # a = np.append(X_test[:50], X_test[-50:], axis=0)
 # b = np.append(y_test[:50], y_test[-50:], axis=0)
 # dim_reduction_plot_tsne(X_test, y_test)
