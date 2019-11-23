@@ -280,10 +280,15 @@ if __name__ == "__main__":
         imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
+        imdb_csv = 'твой путь'
+        to_imdb_mean_csv = 'твой путь'
+
     else:
         imdb_dir: str = 'D:\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
+        imdb_mean_csv = 'D:\\datasets\\csv_files\\imdb_mean.csv'
+        to_imdb_mean_csv = 'D:\\datasets\\csv_files'
 
     stop_words = set(stopwords.words('english'))
 
@@ -293,11 +298,11 @@ if __name__ == "__main__":
     # region make_csv
     # Xy_train = csv_from_txts(train_dir)
     # Xy_test = csv_from_txts(test_dir)
-    # pd.DataFrame(np.append(Xy_train, Xy_test, axis=0)).to_csv("imdb.csv")
+    # pd.DataFrame(np.append(Xy_train, Xy_test, axis=0)).to_csv(to_imdb_mean_csv)
     # endregion
 
     # загрузка данных, формирование тренировочной и тестовой выборок
-    imdb_data = np.genfromtxt('imdb_mean.csv', delimiter=',')
+    imdb_data = np.genfromtxt(imdb_mean_csv, delimiter=',')
     X = imdb_data[1:, 1:-1]
     y = imdb_data[1:, -1:]
 

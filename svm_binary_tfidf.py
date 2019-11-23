@@ -204,21 +204,25 @@ if __name__ == "__main__":
         imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
+        imdb_csv = 'твой путь'
+        to_imdb_csv = 'твой путь'
     else:
         imdb_dir: str = 'D:\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
+        imdb_csv = 'D:\\datasets\\csv_files\\imdb.csv'
+        to_imdb_csv = 'D:\\datasets\\csv_files'
 
     stop_words = set(stopwords.words('english'))
 
     # region make_csv
     # Xy_train = csv_from_txts(train_dir)
     # Xy_test = csv_from_txts(test_dir)
-    # pd.DataFrame(np.append(Xy_train, Xy_test, axis=0)).to_csv("imdb.csv")
+    # pd.DataFrame(np.append(Xy_train, Xy_test, axis=0)).to_csv(to_imdb_csv)
     # endregion
 
     # загрузка данных, векторизация текстов
-    imdb_data = pd.read_csv('imdb.csv')
+    imdb_data = pd.read_csv(imdb_csv)
     X, y = tf_idf_representation(imdb_data)
 
     # масштабирование данных

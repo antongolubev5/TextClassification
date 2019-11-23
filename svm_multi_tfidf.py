@@ -288,20 +288,24 @@ if __name__ == "__main__":
         imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
+        reuters_csv = 'твой путь'
+        to_reuters_csv = 'твой путь'
     else:
         imdb_dir: str = 'D:\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
+        reuters_csv = 'D:\\datasets\\csv_files\\reuters.csv'
+        to_reuters_csv = 'D:\\datasets\\csv_files'
 
     stop_words = set(stopwords.words('english'))
 
     # region make csv file
     # reuters = csv_from_txts(reuters_dir)
-    # pd.DataFrame(reuters).to_csv("reuters.csv")
+    # pd.DataFrame(reuters).to_csv(to_reuters_csv)
     # endregion
 
     # загрузка данных, формирование тренировочной и тестовой выборок
-    reuters_data = pd.read_csv('reuters.csv')
+    reuters_data = pd.read_csv(reuters_csv)
     X, y = tf_idf_representation(reuters_data)
 
     # масштабирование выборки
