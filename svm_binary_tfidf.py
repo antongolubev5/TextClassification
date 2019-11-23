@@ -1,11 +1,11 @@
 import os
 import time
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
-from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from sklearn.decomposition import PCA
@@ -18,11 +18,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from tok import word_tokenize
+from nltk.corpus import stopwords
 
 
 def tokenizer(text):
     """
-    ôîðìàòèðîâàíèå ñòðîêè https://github.com/kootenpv/tok/blob/master/README.md
+    форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
     regexp, stop_words, lowercase, stemmer
     """
     ps = PorterStemmer()
@@ -37,11 +38,9 @@ def tokenizer(text):
 
 def tokenizer_tfidf(text):
     """
-    ôîðìàòèðîâàíèå ñòðîêè https://github.com/kootenpv/tok/blob/master/README.md
+    форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
     """
     # regexp, stop_words, lowercase, stemmer
-    f = open('english_stop_words', 'r')
-    stop_words = [line.strip() for line in f]
 
     ps = PorterStemmer()
     result = word_tokenize(text)
@@ -55,10 +54,10 @@ def tokenizer_tfidf(text):
 
 def csv_from_txts(directory):
     """
-    Çàãðóçêà äàííûõ â csv file.
-    Áåðåì ñðåäíèé âåêòîð âñåãî äîêóìåíòà äëÿ ïîëó÷åíèÿ áîëåå íèçêîé ðàçìåðíîñòè
-    :param directory: äèðåêòîðèÿ ñ ôàéëàìè
-    :return: îáó÷àþùàÿ è òðåíèðîâî÷íàÿ âûáîðêè
+    Загрузка данных в csv file.
+    Берем средний вектор всего документа для получения более низкой размерности
+    :param directory: директория с файлами
+    :return: обучающая и тренировочная выборки
     """
     df = pd.DataFrame(columns=['text', 'label'])
     num = 0
@@ -76,7 +75,7 @@ def csv_from_txts(directory):
 
 def dim_reduction_plot(X, y):
     """
-    ïîñòðîåíèå òðåõìåðíîãî ãðàôèêà ñíèæåííîé ðàçìåðíîñòè
+    построение графика сниженной размерности в пространстве признаков
     :param X:
     :param y:
     :return:
@@ -98,12 +97,12 @@ def dim_reduction_plot(X, y):
 
 def dim_reduction_plot_tsne(X, y):
     """
-    Ñòîõàñòè÷åñêîå âëîæåíèå ñîñåäåé ñ t-ðàñïðåäåëåíèåì (àíãë. t-distributed Stochastic Neighbor Embedding, t-SNE) —
-    ýòî àëãîðèòì ìàøèííîãî îáó÷åíèÿ äëÿ âèçóàëèçàöèè, ðàçðàáîòàííûé Ëîðåíñîì âàí äåð Ìààòåíîì è Äæåôôðè Õèíòîíîì.
-    Îí ÿâëÿåòñÿ òåõíèêîé íåëèíåéíîãî ñíèæåíèÿ ðàçìåðíîñòè, õîðîøî ïîäõîäÿùåé äëÿ âëîæåíèÿ äàííûõ âûñîêîé ðàçìåðíîñòè
-    äëÿ âèçóàëèçàöèè â ïðîñòðàíñòâî íèçêîé ðàçìåðíîñòè (äâóõ- èëè òðåõìåðíîå). Â ÷àñòíîñòè, ìåòîä ìîäåëèðóåò êàæäûé
-    îáúåêò âûñîêîé ðàçìåðíîñòè äâóõ- èëè òð¸õìåðíîé òî÷êîé òàêèì îáðàçîì, ÷òî ïîõîæèå îáúåêòû ìîäåëèðóþòñÿ áëèçêî
-    ðàñïîëîæåííûìè òî÷êàìè, à íåïîõîæèå òî÷êè ìîäåëèðóþòñÿ ñ áîëüøîé P òî÷êàìè, äàëåêî äðóã îò äðóãà îòñòîÿùèìè.
+    Стохастическое вложение соседей с t-распределением (англ. t-distributed Stochastic Neighbor Embedding, t-SNE) —
+    это алгоритм машинного обучения для визуализации, разработанный Лоренсом ван дер Маатеном и Джеффри Хинтоном.
+    Он является техникой нелинейного снижения размерности, хорошо подходящей для вложения данных высокой размерности
+    для визуализации в пространство низкой размерности (двух- или трехмерное). В частности, метод моделирует каждый
+    объект высокой размерности двух- или трёхмерной точкой таким образом, что похожие объекты моделируются близко
+    расположенными точками, а непохожие точки моделируются с большой P точками, далеко друг от друга отстоящими.
     """
     x_reduced = TSNE(n_components=2).fit_transform(X)
     sns.scatterplot(x_reduced[:, 0], x_reduced[:, 1], hue=y, legend='full')
@@ -111,11 +110,11 @@ def dim_reduction_plot_tsne(X, y):
 
 def roc_curve_own(model, X, y):
     """
-    ïîñòðîåíèå roc-êðèâîé ìîäåëè, èçìåíÿåìûé ïàðàìåòð - w_0
-    :param model: îáó÷åííàÿ ìîäåëü
-    :param X: ïðèçíàêè
-    :param y: îòâåòû
-    :return: ãðàôèê roc-êðèâîé
+    построение roc-кривой модели, изменяемый параметр - w_0
+    :param model: обученная модель
+    :param X: признаки
+    :param y: ответы
+    :return: график roc-кривой
     """
     roc_array = np.zeros((len(X), 2))  # ñâåðõó fpr, ñíèçó tpr
     a_y = np.zeros((len(X), 2))  # ñâåðõó decision_function(x_i), ñíèçó ìåòêà êëàññà
@@ -159,7 +158,7 @@ def roc_curve_own(model, X, y):
 
 def grid_search_best_params():
     """
-    ïîèñê îïòèìàëüíûõ ïàðàìåòðîâ svc ìîäåëè
+    поиск оптимальных параметров
     :return:
     """
     param_grid = {'C': [0.1, 1, 10, 100, 1000],
@@ -178,6 +177,11 @@ def grid_search_best_params():
 
 
 def tf_idf_representation(csv_file):
+    """
+    векторизация текстов с помощью tf-idf
+    :param csv_file:
+    :return:
+    """
     texts = list(csv_file['0'])
     labels = list(csv_file['1'])
 
@@ -189,6 +193,7 @@ def tf_idf_representation(csv_file):
     representations = vectorizer.fit_transform(corpus).toarray()
 
     return representations, labels
+
 
 if __name__ == "__main__":
 
@@ -203,26 +208,29 @@ if __name__ == "__main__":
         imdb_dir: str = 'D:\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
+
+    stop_words = set(stopwords.words('english'))
+
     # region make_csv
     # Xy_train = csv_from_txts(train_dir)
     # Xy_test = csv_from_txts(test_dir)
     # pd.DataFrame(np.append(Xy_train, Xy_test, axis=0)).to_csv("imdb.csv")
     # endregion
 
-    # çàãðóçêà äàííûõ, ôîðìèðîâàíèå òðåíèðîâî÷íîé è òåñòîâîé âûáîðîê
+    # загрузка данных, векторизация текстов
     imdb_data = pd.read_csv('imdb.csv')
     X, y = tf_idf_representation(imdb_data)
 
-    # ìàñøòàáèðîâàíèå âûáîðîê
+    # масштабирование данных
     scaler = StandardScaler().fit_transform(X)
 
-    # ðàçäåëåíèå âûáîðêè íà òðåíèðîâî÷íóþ è òåñòîâóþ
+    # разделение данных на тренировочную и тестовую выборки
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
 
     # grid_search_best_params()
 
-    # region äâóìåðíûé ãðàôèê tsne
-    # ïîñòðîåíèå ãðàôèêà ñíèæåííîé ðàçìåðíîñòè
+    # region построение графика tsne
+    # построение графика сниженной размерности
     # a = np.append(X_test[:50], X_test[-50:], axis=0)
     # b = np.append(y_test[:50], y_test[-50:], axis=0)
     # dim_reduction_plot_tsne(X_test, y_test)

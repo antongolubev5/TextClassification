@@ -1,27 +1,35 @@
 import os
-
+import time
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
-from nltk import word_tokenize
+from nltk import word_tokenize, PorterStemmer
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import StandardScaler, MultiLabelBinarizer
-from sklearn.svm import SVC
 from sklearn.svm import LinearSVC
-from sklearn.metrics import accuracy_score
 from tok import word_tokenize
-from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.corpus import stopwords
 
 
 def tokenizer(text):
     """
     форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
+    regexp, stop_words, lowercase, stemmer
     """
-    return word_tokenize(text)
+
+    ps = PorterStemmer()
+    result = word_tokenize(text)
+    output = []
+
+    for element in result:
+        if not (element in stop_words):
+            output.append(ps.stem(element))
+
+    return output
 
 
 def embeddings_download(directory):
@@ -60,7 +68,7 @@ def data_download(review_size, embeddings_index, directory):
             if file_name[-4:] == '.txt':
                 f = open(os.path.join(dir_name, file_name), encoding='utf-8')
                 temp_str = f.read()
-                temp_str = Tokenizer(temp_str)
+                temp_str = tokenizer(temp_str)
                 review = []
                 cnt = 0
                 while len(review) != review_size * embed_len and cnt < len(temp_str):
@@ -106,13 +114,13 @@ def data_download_mean(embeddings_index, directory):
     embed_len = len(embeddings_index[next(iter(embeddings_index))])
     review = np.zeros(embed_len, type, 'f')
 
-    for subdir, dirs, files in os.walk(newsgroup_dir):
+    for subdir, dirs, files in os.walk(directory):
         for dir in dirs:
             dict_labels[dir] = cnt
             cnt += 1
 
     for element in dict_labels:
-        for subdir, dirs, files in os.walk(os.path.join(newsgroup_dir, element)):
+        for subdir, dirs, files in os.walk(os.path.join(directory, element)):
             for file in files:
                 review = np.zeros(embed_len, type, 'f')
                 f = open(os.path.join(subdir, file), encoding='utf-8', errors='ignore')
@@ -124,7 +132,7 @@ def data_download_mean(embeddings_index, directory):
                         flag = True
                     if flag:
                         temp_str = temp_str + " " + line
-                temp_str = Tokenizer(temp_str)
+                temp_str = tokenizer(temp_str)
                 for word in temp_str:
                     if word in embeddings_index.keys():
                         review += np.asarray(embeddings_index[word].tolist())
@@ -306,54 +314,68 @@ def roc_curve_own(model, X, y):
     plt.show()
 
 
-# constants
-glove_dir = 'D:\\datasets\\glove.6B'
-newsgroup_dir = 'D:\\datasets\\20_newsgroups'
-reuters_dir = 'D:\\datasets\\reuters'
-labels_cnt = 90
+if __name__ == "__main__":
 
-# загрузка embedding'ов
-embeddings_index = embeddings_download(glove_dir)
-reuters = data_download_mean_reuters(embeddings_index)
-# pd.DataFrame(reuters).to_csv("reuters_mean.csv")
+    start_time = time.time()
 
-# загрузка данных, формирование тренировочной и тестовой выборок
-data = np.genfromtxt('reuters_mean.csv', delimiter=',')
-X = data[1:, 1:-labels_cnt]
-y = data[1:, -labels_cnt:]
+    if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:
+        glove_dir = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\glove.6B'
+        imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
+        train_dir = os.path.join(imdb_dir, 'train')
+        test_dir = os.path.join(imdb_dir, 'test')
+    else:
+        imdb_dir: str = 'D:\\datasets\\aclImdb'
+        train_dir = os.path.join(imdb_dir, 'train')
+        test_dir = os.path.join(imdb_dir, 'test')
 
-# масштабирование выборки
-scaler = StandardScaler()
-scaler.fit_transform(X)
+    stop_words = set(stopwords.words('english'))
+    labels_cnt = 90
 
-# разделение на тренировочную и тестовую выборки
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
+    # загрузка embedding'ов
+    embeddings_index = embeddings_download(glove_dir)
+    reuters = data_download_mean_reuters(embeddings_index)
+    # pd.DataFrame(reuters).to_csv("reuters_mean.csv")
 
-# построение трехмерного графика сниженной размерности
-# dim_reduction_plot_tsne(X_test, y_test)
+    # загрузка данных, формирование тренировочной и тестовой выборок
+    data = np.genfromtxt('reuters_mean.csv', delimiter=',')
+    X = data[1:, 1:-labels_cnt]
+    y = data[1:, -labels_cnt:]
 
-# nonlinear svm
-clf_SVC = OneVsRestClassifier(LinearSVC())
-# clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma='auto', coef0=0.0, shrinking=True,
-#               probability=False, tol=0.001, cache_size=1000, class_weight=None,
-#               verbose=0, max_iter=-1, decision_function_shape="ovr", random_state=0)
-clf_SVC.fit(X_train, y_train)
+    # масштабирование выборки
+    scaler = StandardScaler()
+    scaler.fit_transform(X)
 
-# answers = clf_SVC.predict(X_test)
-# results = np.zeros(90)
-# difference = 0
-# for i in range(answers.shape[0]):
-#     for j in range(len(answers[0])):
-#         if answers[i][j] != y_test[i][j]:
-#             difference += 1
-#
-# print((answers.shape[0]*answers.shape[1]-2091)/(answers.shape[0]*answers.shape[1]))
-#
-# for i in range(90):
-#     print("Точность предсказания", i, "-го класса = ", accuracy_score(y_test[:, i], clf_SVC.predict(X_test)[:, i]))
-#     results[i] = (accuracy_score(y_test[:, i], clf_SVC.predict(X_test)[:, i]))
-#
-# print("Точность предсказания в среднем по классам = ", results.mean())
+    # разделение на тренировочную и тестовую выборки
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
 
-print('Accuracy of SVC on training set: {:.2f}'.format(clf_SVC.score(X_train, y_train) * 100))
-print('Accuracy of SVC on test set: {:.2f}'.format(clf_SVC.score(X_test, y_test) * 100))
+    # построение трехмерного графика сниженной размерности
+    # dim_reduction_plot_tsne(X_test, y_test)
+
+    # nonlinear svm
+    clf_SVC = OneVsRestClassifier(LinearSVC())
+    # clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma='auto', coef0=0.0, shrinking=True,
+    #               probability=False, tol=0.001, cache_size=1000, class_weight=None,
+    #               verbose=0, max_iter=-1, decision_function_shape="ovr", random_state=0)
+    clf_SVC.fit(X_train, y_train)
+
+    # answers = clf_SVC.predict(X_test)
+    # results = np.zeros(90)
+    # difference = 0
+    # for i in range(answers.shape[0]):
+    #     for j in range(len(answers[0])):
+    #         if answers[i][j] != y_test[i][j]:
+    #             difference += 1
+    #
+    # print((answers.shape[0]*answers.shape[1]-2091)/(answers.shape[0]*answers.shape[1]))
+    #
+    # for i in range(90):
+    #     print("Точность предсказания", i, "-го класса = ", accuracy_score(y_test[:, i], clf_SVC.predict(X_test)[:, i]))
+    #     results[i] = (accuracy_score(y_test[:, i], clf_SVC.predict(X_test)[:, i]))
+    #
+    # print("Точность предсказания в среднем по классам = ", results.mean())
+
+    print('Accuracy of SVC on training set: {:.2f}'.format(clf_SVC.score(X_train, y_train) * 100))
+    print('Accuracy of SVC on test set: {:.2f}'.format(clf_SVC.score(X_test, y_test) * 100))
+
+    total_time = round((time.time() - start_time))
+    print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))

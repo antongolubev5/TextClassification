@@ -7,6 +7,7 @@ import pandas as pd
 import seaborn as sns
 from keras.preprocessing.text import Tokenizer
 from mpl_toolkits.mplot3d import Axes3D
+from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from sklearn.decomposition import PCA
@@ -24,8 +25,6 @@ def tokenizer(text):
     форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
     """
     # regexp, stop_words, lowercase, stemmer
-    f = open('english_stop_words', 'r')
-    stop_words = [line.strip() for line in f]
 
     ps = PorterStemmer()
     result = word_tokenize(text)
@@ -42,8 +41,6 @@ def tokenizer_tfidf(text):
     форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
     """
     # regexp, stop_words, lowercase, stemmer
-    f = open('english_stop_words', 'r')
-    stop_words = [line.strip() for line in f]
 
     ps = PorterStemmer()
     result = word_tokenize(text)
@@ -274,57 +271,65 @@ def grid_search_best_params():
     print(classification_report(y_test, grid_predictions))
 
 
-# print(tokenizer_tfidf("Hello, my name is pythonic"))
-start_time = time.time()
+if __name__ == "__main__":
 
-glove_dir = 'D:\\datasets\\glove.6B'
-imdb_dir: str = 'D:\\datasets\\aclImdb'
-train_dir = os.path.join(imdb_dir, 'train')
-test_dir = os.path.join(imdb_dir, 'test')
+    start_time = time.time()
 
-# загрузка embedding'ов
-embeddings_index = embeddings_download(glove_dir)
+    if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:
+        glove_dir = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\glove.6B'
+        imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
+        train_dir = os.path.join(imdb_dir, 'train')
+        test_dir = os.path.join(imdb_dir, 'test')
+    else:
+        imdb_dir: str = 'D:\\datasets\\aclImdb'
+        train_dir = os.path.join(imdb_dir, 'train')
+        test_dir = os.path.join(imdb_dir, 'test')
 
-# region make_csv
-# Xy_train = csv_from_txts(train_dir)
-# Xy_test = csv_from_txts(test_dir)
-# pd.DataFrame(np.append(Xy_train, Xy_test, axis=0)).to_csv("imdb.csv")
-# endregion
+    stop_words = set(stopwords.words('english'))
 
-# загрузка данных, формирование тренировочной и тестовой выборок
-imdb_data = np.genfromtxt('imdb_mean.csv', delimiter=',')
-X = imdb_data[1:, 1:-1]
-y = imdb_data[1:, -1:]
+    # загрузка embedding'ов
+    embeddings_index = embeddings_download(glove_dir)
 
-# масштабирование выборок
-scaler = StandardScaler().fit_transform(X)
+    # region make_csv
+    # Xy_train = csv_from_txts(train_dir)
+    # Xy_test = csv_from_txts(test_dir)
+    # pd.DataFrame(np.append(Xy_train, Xy_test, axis=0)).to_csv("imdb.csv")
+    # endregion
 
-# разделение выборки на тренировочную и тестовую
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
+    # загрузка данных, формирование тренировочной и тестовой выборок
+    imdb_data = np.genfromtxt('imdb_mean.csv', delimiter=',')
+    X = imdb_data[1:, 1:-1]
+    y = imdb_data[1:, -1:]
 
-# grid_search_best_params()
+    # масштабирование выборок
+    scaler = StandardScaler().fit_transform(X)
 
-# region двумерный график tsne
-# построение графика сниженной размерности
-# a = np.append(X_test[:50], X_test[-50:], axis=0)
-# b = np.append(y_test[:50], y_test[-50:], axis=0)
-# dim_reduction_plot_tsne(X_test, y_test)
-# endregion
+    # разделение выборки на тренировочную и тестовую
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
 
-# nonlinear svm
-clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma=1, coef0=0.0, shrinking=True,
-              probability=False, tol=0.001, cache_size=1000, class_weight=None,
-              verbose=True, max_iter=-1, decision_function_shape="ovr", random_state=0)
-clf_SVC.fit(X_train, y_train)
+    # grid_search_best_params()
 
-print('Accuracy of SVC on training set: {:.2f}'.format(clf_SVC.score(X_train, y_train) * 100))
-print('Accuracy of SVC on test set: {:.2f}'.format(clf_SVC.score(X_test, y_test) * 100))
+    # region двумерный график tsne
+    # построение графика сниженной размерности
+    # a = np.append(X_test[:50], X_test[-50:], axis=0)
+    # b = np.append(y_test[:50], y_test[-50:], axis=0)
+    # dim_reduction_plot_tsne(X_test, y_test)
+    # endregion
 
-# roc_curve
-roc_curve_own(clf_SVC, X_test, y_test)
+    # nonlinear svm
+    clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma=1, coef0=0.0, shrinking=True,
+                  probability=False, tol=0.001, cache_size=1000, class_weight=None,
+                  verbose=True, max_iter=-1, decision_function_shape="ovr", random_state=0)
+    clf_SVC.fit(X_train, y_train)
 
-# confusion_matrix
-conf_matrix = confusion_matrix(clf_SVC.predict(X_test), y_test)
+    print('Accuracy of SVC on training set: {:.2f}'.format(clf_SVC.score(X_train, y_train) * 100))
+    print('Accuracy of SVC on test set: {:.2f}'.format(clf_SVC.score(X_test, y_test) * 100))
 
-total_time = round((time.time() - start_time))
-print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
+    # roc_curve
+    roc_curve_own(clf_SVC, X_test, y_test)
+
+    # confusion_matrix
+    conf_matrix = confusion_matrix(clf_SVC.predict(X_test), y_test)
+
+    total_time = round((time.time() - start_time))
+    print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
