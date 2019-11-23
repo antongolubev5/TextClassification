@@ -190,58 +190,59 @@ def tf_idf_representation(csv_file):
 
     return representations, labels
 
+if __name__ == "__main__":
 
-start_time = time.time()
+    start_time = time.time()
 
-if('DESKTOP-TF87PFA' in os.environ['COMPUTERNAME'] ):
-    glove_dir = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\glove.6B'
-    imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
-    train_dir = os.path.join(imdb_dir, 'train')
-    test_dir = os.path.join(imdb_dir, 'test')
-else:
-    imdb_dir: str = 'D:\\datasets\\aclImdb'
-    train_dir = os.path.join(imdb_dir, 'train')
-    test_dir = os.path.join(imdb_dir, 'test')
-# region make_csv
-# Xy_train = csv_from_txts(train_dir)
-# Xy_test = csv_from_txts(test_dir)
-# pd.DataFrame(np.append(Xy_train, Xy_test, axis=0)).to_csv("imdb.csv")
-# endregion
+    if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:
+        glove_dir = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\glove.6B'
+        imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
+        train_dir = os.path.join(imdb_dir, 'train')
+        test_dir = os.path.join(imdb_dir, 'test')
+    else:
+        imdb_dir: str = 'D:\\datasets\\aclImdb'
+        train_dir = os.path.join(imdb_dir, 'train')
+        test_dir = os.path.join(imdb_dir, 'test')
+    # region make_csv
+    # Xy_train = csv_from_txts(train_dir)
+    # Xy_test = csv_from_txts(test_dir)
+    # pd.DataFrame(np.append(Xy_train, Xy_test, axis=0)).to_csv("imdb.csv")
+    # endregion
 
-# çàãðóçêà äàííûõ, ôîðìèðîâàíèå òðåíèðîâî÷íîé è òåñòîâîé âûáîðîê
-imdb_data = pd.read_csv('imdb.csv')
-X, y = tf_idf_representation(imdb_data)
+    # çàãðóçêà äàííûõ, ôîðìèðîâàíèå òðåíèðîâî÷íîé è òåñòîâîé âûáîðîê
+    imdb_data = pd.read_csv('imdb.csv')
+    X, y = tf_idf_representation(imdb_data)
 
-# ìàñøòàáèðîâàíèå âûáîðîê
-scaler = StandardScaler().fit_transform(X)
+    # ìàñøòàáèðîâàíèå âûáîðîê
+    scaler = StandardScaler().fit_transform(X)
 
-# ðàçäåëåíèå âûáîðêè íà òðåíèðîâî÷íóþ è òåñòîâóþ
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
+    # ðàçäåëåíèå âûáîðêè íà òðåíèðîâî÷íóþ è òåñòîâóþ
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
 
-# grid_search_best_params()
+    # grid_search_best_params()
 
-# region äâóìåðíûé ãðàôèê tsne
-# ïîñòðîåíèå ãðàôèêà ñíèæåííîé ðàçìåðíîñòè
-# a = np.append(X_test[:50], X_test[-50:], axis=0)
-# b = np.append(y_test[:50], y_test[-50:], axis=0)
-# dim_reduction_plot_tsne(X_test, y_test)
-# endregion
+    # region äâóìåðíûé ãðàôèê tsne
+    # ïîñòðîåíèå ãðàôèêà ñíèæåííîé ðàçìåðíîñòè
+    # a = np.append(X_test[:50], X_test[-50:], axis=0)
+    # b = np.append(y_test[:50], y_test[-50:], axis=0)
+    # dim_reduction_plot_tsne(X_test, y_test)
+    # endregion
 
-# nonlinear svm
-# clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma=1, coef0=0.0, shrinking=True,
-#                     probability=False, tol=0.001, cache_size=1000, class_weight=None,
-#                     verbose=True, max_iter=-1, decision_function_shape="ovr", random_state=0)
-clf_SVC = SVC()
-clf_SVC.fit(X_train, y_train)
+    # nonlinear svm
+    # clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma=1, coef0=0.0, shrinking=True,
+    #                     probability=False, tol=0.001, cache_size=1000, class_weight=None,
+    #                     verbose=True, max_iter=-1, decision_function_shape="ovr", random_state=0)
+    clf_SVC = SVC()
+    clf_SVC.fit(X_train, y_train)
 
-print('Accuracy of SVC on training set: {:.2f}'.format(clf_SVC.score(X_train, y_train) * 100))
-print('Accuracy of SVC on test set: {:.2f}'.format(clf_SVC.score(X_test, y_test) * 100))
+    print('Accuracy of SVC on training set: {:.2f}'.format(clf_SVC.score(X_train, y_train) * 100))
+    print('Accuracy of SVC on test set: {:.2f}'.format(clf_SVC.score(X_test, y_test) * 100))
 
-# roc_curve
-# roc_curve_own(clf_SVC, X_test, y_test)
+    # roc_curve
+    # roc_curve_own(clf_SVC, X_test, y_test)
 
-# confusion_matrix
-conf_matrix = confusion_matrix(clf_SVC.predict(X_test), y_test)
+    # confusion_matrix
+    conf_matrix = confusion_matrix(clf_SVC.predict(X_test), y_test)
 
-total_time = round((time.time() - start_time))
-print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
+    total_time = round((time.time() - start_time))
+    print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
