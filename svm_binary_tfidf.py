@@ -258,3 +258,5 @@ if __name__ == "__main__":
 
     total_time = round((time.time() - start_time))
     print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
+
+    # TODO: check word2vec representations
