@@ -280,16 +280,16 @@ if __name__ == "__main__":
         imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
-        imdb_csv = 'твой путь'
-        to_imdb_mean_csv = 'твой путь'
+        imdb_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files\\imdb_mean.csv'
+        to_imdb_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files'
 
     else:
+        glove_dir = 'D:\\datasets\\glove.6B'
         imdb_dir: str = 'D:\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
-        imdb_mean_csv = 'D:\\datasets\\csv_files\\imdb_mean.csv'
-        to_imdb_mean_csv = 'D:\\datasets\\csv_files'
-
+        imdb_csv = 'D:\\datasets\\csv_files\\imdb_mean.csv'
+        to_imdb_csv = 'D:\\datasets\\csv_files'
     stop_words = set(stopwords.words('english'))
 
     # загрузка embedding'ов
