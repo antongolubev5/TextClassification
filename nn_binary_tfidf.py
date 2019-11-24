@@ -19,7 +19,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tok import word_tokenize
 
-
 def tokenizer(text):
     """
     форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
@@ -323,7 +322,8 @@ def accuracy_graph(model_history):
 
 
 if __name__ == "__main__":
-
+    # test
+    a = []
     start_time = time.time()
     stop_words = set(stopwords.words('english'))
 
