@@ -318,20 +318,27 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
+
+
     if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:
         glove_dir = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\glove.6B'
         imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
-        reuters_mean_csv = 'твой путь'
-        to_reuters_mean_csv = 'твой путь'
+        imdb_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files\\imdb.csv'
+        to_imdb_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files'
+        reuters_mean_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files\\reuters_mean.csv'
+        to_reuters_mean_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files'
     else:
         glove_dir = 'D:\\datasets\\glove.6B'
         imdb_dir: str = 'D:\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
+        imdb_csv = 'D:\\datasets\\csv_files\\imdb.csv'
+        to_imdb_csv = 'D:\\datasets\\csv_files'
         reuters_mean_csv = 'D:\\datasets\\csv_files\\reuters_mean.csv'
         to_reuters_mean_csv = 'D:\\datasets\\csv_files'
+
 
     stop_words = set(stopwords.words('english'))
     labels_cnt = 90
