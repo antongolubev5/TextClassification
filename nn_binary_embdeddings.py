@@ -16,13 +16,15 @@ from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
 from tok import word_tokenize
+from keras import models
+from keras import layers
 
 
 def tokenizer(text):
     """
     форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
+    возвращает предложение как список
     """
     # regexp, stop_words, lowercase, stemmer
 
@@ -39,6 +41,7 @@ def tokenizer(text):
 def tokenizer_tfidf(text):
     """
     форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
+    возвращает предложение как строку
     """
     # regexp, stop_words, lowercase, stemmer
 
@@ -251,29 +254,10 @@ def roc_curve_own(model, X, y):
     plt.show()
 
 
-def grid_search_best_params():
-    """
-    поиск оптимальных параметров svc модели
-    :return:
-    """
-    param_grid = {'C': [0.1, 1, 10, 100, 1000],
-                  'gamma': [1, 0.1, 0.01, 0.001, 0.0001],
-                  'kernel': ['rbf']}
-
-    grid = GridSearchCV(SVC(), param_grid, refit=True, verbose=3)
-
-    grid.fit(X_train, y_train)
-
-    print(grid.best_params_)
-    print(grid.best_estimator_)
-
-    grid_predictions = grid.predict(X_test)
-    print(classification_report(y_test, grid_predictions))
-
-
 if __name__ == "__main__":
 
     start_time = time.time()
+    stop_words = set(stopwords.words('english'))
 
     if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:
         glove_dir = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\glove.6B'
@@ -284,13 +268,12 @@ if __name__ == "__main__":
         to_imdb_mean_csv = 'твой путь'
 
     else:
+        glove_dir = 'D:\\datasets\\glove.6B'
         imdb_dir: str = 'D:\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
         imdb_mean_csv = 'D:\\datasets\\csv_files\\imdb_mean.csv'
         to_imdb_mean_csv = 'D:\\datasets\\csv_files'
-
-    stop_words = set(stopwords.words('english'))
 
     # загрузка embedding'ов
     embeddings_index = embeddings_download(glove_dir)
@@ -312,29 +295,15 @@ if __name__ == "__main__":
     # разделение выборки на тренировочную и тестовую
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
 
-    # grid_search_best_params()
-
-    # region двумерный график tsne
-    # построение графика сниженной размерности
-    # a = np.append(X_test[:50], X_test[-50:], axis=0)
-    # b = np.append(y_test[:50], y_test[-50:], axis=0)
-    # dim_reduction_plot_tsne(X_test, y_test)
-    # endregion
-
-    # nonlinear svm
-    clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma=1, coef0=0.0, shrinking=True,
-                  probability=False, tol=0.001, cache_size=1000, class_weight=None,
-                  verbose=True, max_iter=-1, decision_function_shape="ovr", random_state=0)
-    clf_SVC.fit(X_train, y_train)
-
-    print('Accuracy of SVC on training set: {:.2f}'.format(clf_SVC.score(X_train, y_train) * 100))
-    print('Accuracy of SVC on test set: {:.2f}'.format(clf_SVC.score(X_test, y_test) * 100))
-
-    # roc_curve
-    roc_curve_own(clf_SVC, X_test, y_test)
-
-    # confusion_matrix
-    conf_matrix = confusion_matrix(clf_SVC.predict(X_test), y_test)
+    model = models.Sequential()
+    model.add(layers.Dense(16, activation='relu', input_shape=(100,)))
+    model.add(layers.Dense(16, activation='relu'))
+    model.add(layers.Dense(1, activation='sigmoid'))
+    model.compile(optimizer='rmsprop',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+    model.fit(X_train, y_train, epochs=4, batch_size=512)
+    results = model.evaluate(X_test, y_test)
 
     total_time = round((time.time() - start_time))
     print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
