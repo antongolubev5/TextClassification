@@ -377,7 +377,7 @@ if __name__ == "__main__":
     accuracy_graph(history)
     print(mdl.evaluate(X_test, y_test))
 
-    my_own_text = ["this film was very bad :("]
+    my_own_text = ["test"]
     my_own_test = vector_mdl.transform(my_own_text)
 
     print(mdl.predict(my_own_test))
