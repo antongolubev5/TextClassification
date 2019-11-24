@@ -5,20 +5,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from keras import layers
+from keras import models
 from keras.preprocessing.text import Tokenizer
 from mpl_toolkits.mplot3d import Axes3D
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from sklearn.decomposition import PCA
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.manifold import TSNE
-from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tok import word_tokenize
-from keras import models
-from keras import layers
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 def tokenizer(text):
@@ -261,30 +260,66 @@ def tf_idf_representation(csv_file):
     :return:
     """
     texts = list(csv_file['0'])
-    labels = list(csv_file['1'])
+    labels = np.asarray(list(csv_file['1'])).astype('float32')
 
     # corpus = list(map(tokenizer_tfidf, texts))
     corpus = list(texts)
     vectorizer = TfidfVectorizer(ngram_range=[1, 2], decode_error='ignore', lowercase=True, stop_words='english',
                                  min_df=0.001)
-    # vectorizer = TfidfVectorizer(stop_words="english", decode_error='ignore', lowercase=True, ngram_range=(1, 2))
     representations = vectorizer.fit_transform(corpus).toarray()
 
-    return representations, labels
+    return representations, labels, vectorizer
 
-    def generate_model():
-        """
-        создание и обучение модели
-        :return:
-        """
-        model = models.Sequential()
-        model.add(layers.Dense(16, activation='relu', input_shape=(X.shape[1],)))
-        model.add(layers.Dense(16, activation='relu'))
-        model.add(layers.Dense(1, activation='sigmoid'))
-        model.compile(optimizer='rmsprop',
-                      loss='binary_crossentropy',
-                      metrics=['accuracy'])
-        model.fit(X_train, y_train, epochs=4, batch_size=512)
+
+def generate_model(input_shape):
+    """
+    создание и обучение модели
+    :return:
+    """
+    model = models.Sequential()
+    model.add(layers.Dense(16, activation='relu', input_shape=(input_shape,)))
+    model.add(layers.Dense(16, activation='relu'))
+    model.add(layers.Dense(1, activation='sigmoid'))
+    model.compile(optimizer='rmsprop',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+    return model
+
+
+def loss_graph(model_history):
+    """
+    график потерь на этапах обучения и проверки
+    :return:
+    """
+    history_dict = model_history.history
+    loss_values = history_dict['loss']
+    val_loss_values = history_dict['val_loss']
+    epochs = range(1, len(model_history.epoch) + 1)
+    plt.plot(epochs, loss_values, 'bo', label='Training loss')
+    plt.plot(epochs, val_loss_values, 'b', label='Validation loss')
+    plt.title('Training and validation loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.show()
+
+
+def accuracy_graph(model_history):
+    """
+    график точности на этапах обучения и проверки
+    :return:
+    """
+    history_dict = model_history.history
+    acc_values = history_dict['accuracy']
+    val_acc_values = history_dict['val_accuracy']
+    epochs = range(1, len(model_history.epoch) + 1)
+    plt.plot(epochs, acc_values, 'bo', label='Training accuracy')
+    plt.plot(epochs, val_acc_values, 'b', label='Validation accuracy')
+    plt.title('Training and validation accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -319,23 +354,33 @@ if __name__ == "__main__":
 
     # загрузка данных, векторизация текстов
     imdb_data = pd.read_csv(imdb_csv)
-    X, y = tf_idf_representation(imdb_data)
+
+    X, y, vector_mdl = tf_idf_representation(imdb_data)
 
     # масштабирование выборок
     scaler = StandardScaler().fit_transform(X)
 
-    # разделение выборки на тренировочную и тестовую
+    # разделение выборки на тренировочную, тестовую и валидационную
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
+    X_val = X_train[:10000]
+    X_train = X_train[10000:]
+    y_val = y_train[:10000]
+    y_train = y_train[10000:]
 
-    model = models.Sequential()
-    model.add(layers.Dense(16, activation='relu', input_shape=(X.shape[1],)))
-    model.add(layers.Dense(16, activation='relu'))
-    model.add(layers.Dense(1, activation='sigmoid'))
-    model.compile(optimizer='rmsprop',
-                  loss='binary_crossentropy',
-                  metrics=['accuracy'])
-    model.fit(X_train, y_train, epochs=4, batch_size=512)
-    results = model.evaluate(X_test, y_test)
+    mdl = generate_model(X.shape[1])
+    history = mdl.fit(X_train,
+                      y_train,
+                      epochs=5,
+                      batch_size=512,
+                      validation_data=(X_val, y_val))
+    loss_graph(history)
+    accuracy_graph(history)
+    print(mdl.evaluate(X_test, y_test))
+
+    my_own_text = ["this film was very bad :("]
+    my_own_test = vector_mdl.transform(my_own_text)
+
+    print(mdl.predict(my_own_test))
 
     total_time = round((time.time() - start_time))
     print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
