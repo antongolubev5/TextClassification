@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
-from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from sklearn.decomposition import PCA
@@ -19,11 +18,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from tok import word_tokenize
+from nltk.corpus import stopwords
 
 
 def tokenizer(text):
     """
-    форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
+    С„РѕСЂРјР°С‚РёСЂРѕРІР°РЅРёРµ СЃС‚СЂРѕРєРё https://github.com/kootenpv/tok/blob/master/README.md
     regexp, stop_words, lowercase, stemmer
     """
     ps = PorterStemmer()
@@ -38,11 +38,9 @@ def tokenizer(text):
 
 def tokenizer_tfidf(text):
     """
-    форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
+    С„РѕСЂРјР°С‚РёСЂРѕРІР°РЅРёРµ СЃС‚СЂРѕРєРё https://github.com/kootenpv/tok/blob/master/README.md
     """
     # regexp, stop_words, lowercase, stemmer
-    f = open('english_stop_words', 'r')
-    stop_words = [line.strip() for line in f]
 
     ps = PorterStemmer()
     result = word_tokenize(text)
@@ -56,10 +54,10 @@ def tokenizer_tfidf(text):
 
 def csv_from_txts(directory):
     """
-    Загрузка данных в csv file.
-    Берем средний вектор всего документа для получения более низкой размерности
-    :param directory: директория с файлами
-    :return: обучающая и тренировочная выборки
+    Р—Р°РіСЂСѓР·РєР° РґР°РЅРЅС‹С… РІ csv file.
+    Р‘РµСЂРµРј СЃСЂРµРґРЅРёР№ РІРµРєС‚РѕСЂ РІСЃРµРіРѕ РґРѕРєСѓРјРµРЅС‚Р° РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ Р±РѕР»РµРµ РЅРёР·РєРѕР№ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё
+    :param directory: РґРёСЂРµРєС‚РѕСЂРёСЏ СЃ С„Р°Р№Р»Р°РјРё
+    :return: РѕР±СѓС‡Р°СЋС‰Р°СЏ Рё С‚СЂРµРЅРёСЂРѕРІРѕС‡РЅР°СЏ РІС‹Р±РѕСЂРєРё
     """
     df = pd.DataFrame(columns=['text', 'label'])
     num = 0
@@ -77,7 +75,7 @@ def csv_from_txts(directory):
 
 def dim_reduction_plot(X, y):
     """
-    построение трехмерного графика сниженной размерности
+    РїРѕСЃС‚СЂРѕРµРЅРёРµ РіСЂР°С„РёРєР° СЃРЅРёР¶РµРЅРЅРѕР№ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ РїСЂРёР·РЅР°РєРѕРІ
     :param X:
     :param y:
     :return:
@@ -99,12 +97,12 @@ def dim_reduction_plot(X, y):
 
 def dim_reduction_plot_tsne(X, y):
     """
-    Стохастическое вложение соседей с t-распределением (англ. t-distributed Stochastic Neighbor Embedding, t-SNE) —
-    это алгоритм машинного обучения для визуализации, разработанный Лоренсом ван дер Маатеном и Джеффри Хинтоном.
-    Он является техникой нелинейного снижения размерности, хорошо подходящей для вложения данных высокой размерности
-    для визуализации в пространство низкой размерности (двух- или трехмерное). В частности, метод моделирует каждый
-    объект высокой размерности двух- или трёхмерной точкой таким образом, что похожие объекты моделируются близко
-    расположенными точками, а непохожие точки моделируются с большой P точками, далеко друг от друга отстоящими.
+    РЎС‚РѕС…Р°СЃС‚РёС‡РµСЃРєРѕРµ РІР»РѕР¶РµРЅРёРµ СЃРѕСЃРµРґРµР№ СЃ t-СЂР°СЃРїСЂРµРґРµР»РµРЅРёРµРј (Р°РЅРіР». t-distributed Stochastic Neighbor Embedding, t-SNE) вЂ”
+    СЌС‚Рѕ Р°Р»РіРѕСЂРёС‚Рј РјР°С€РёРЅРЅРѕРіРѕ РѕР±СѓС‡РµРЅРёСЏ РґР»СЏ РІРёР·СѓР°Р»РёР·Р°С†РёРё, СЂР°Р·СЂР°Р±РѕС‚Р°РЅРЅС‹Р№ Р›РѕСЂРµРЅСЃРѕРј РІР°РЅ РґРµСЂ РњР°Р°С‚РµРЅРѕРј Рё Р”Р¶РµС„С„СЂРё РҐРёРЅС‚РѕРЅРѕРј.
+    РћРЅ СЏРІР»СЏРµС‚СЃСЏ С‚РµС…РЅРёРєРѕР№ РЅРµР»РёРЅРµР№РЅРѕРіРѕ СЃРЅРёР¶РµРЅРёСЏ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё, С…РѕСЂРѕС€Рѕ РїРѕРґС…РѕРґСЏС‰РµР№ РґР»СЏ РІР»РѕР¶РµРЅРёСЏ РґР°РЅРЅС‹С… РІС‹СЃРѕРєРѕР№ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё
+    РґР»СЏ РІРёР·СѓР°Р»РёР·Р°С†РёРё РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕ РЅРёР·РєРѕР№ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё (РґРІСѓС…- РёР»Рё С‚СЂРµС…РјРµСЂРЅРѕРµ). Р’ С‡Р°СЃС‚РЅРѕСЃС‚Рё, РјРµС‚РѕРґ РјРѕРґРµР»РёСЂСѓРµС‚ РєР°Р¶РґС‹Р№
+    РѕР±СЉРµРєС‚ РІС‹СЃРѕРєРѕР№ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё РґРІСѓС…- РёР»Рё С‚СЂС‘С…РјРµСЂРЅРѕР№ С‚РѕС‡РєРѕР№ С‚Р°РєРёРј РѕР±СЂР°Р·РѕРј, С‡С‚Рѕ РїРѕС…РѕР¶РёРµ РѕР±СЉРµРєС‚С‹ РјРѕРґРµР»РёСЂСѓСЋС‚СЃСЏ Р±Р»РёР·РєРѕ
+    СЂР°СЃРїРѕР»РѕР¶РµРЅРЅС‹РјРё С‚РѕС‡РєР°РјРё, Р° РЅРµРїРѕС…РѕР¶РёРµ С‚РѕС‡РєРё РјРѕРґРµР»РёСЂСѓСЋС‚СЃСЏ СЃ Р±РѕР»СЊС€РѕР№ P С‚РѕС‡РєР°РјРё, РґР°Р»РµРєРѕ РґСЂСѓРі РѕС‚ РґСЂСѓРіР° РѕС‚СЃС‚РѕСЏС‰РёРјРё.
     """
     x_reduced = TSNE(n_components=2).fit_transform(X)
     sns.scatterplot(x_reduced[:, 0], x_reduced[:, 1], hue=y, legend='full')
@@ -112,17 +110,17 @@ def dim_reduction_plot_tsne(X, y):
 
 def roc_curve_own(model, X, y):
     """
-    построение roc-кривой модели, изменяемый параметр - w_0
-    :param model: обученная модель
-    :param X: признаки
-    :param y: ответы
-    :return: график roc-кривой
+    РїРѕСЃС‚СЂРѕРµРЅРёРµ roc-РєСЂРёРІРѕР№ РјРѕРґРµР»Рё, РёР·РјРµРЅСЏРµРјС‹Р№ РїР°СЂР°РјРµС‚СЂ - w_0
+    :param model: РѕР±СѓС‡РµРЅРЅР°СЏ РјРѕРґРµР»СЊ
+    :param X: РїСЂРёР·РЅР°РєРё
+    :param y: РѕС‚РІРµС‚С‹
+    :return: РіСЂР°С„РёРє roc-РєСЂРёРІРѕР№
     """
-    roc_array = np.zeros((len(X), 2))  # сверху fpr, снизу tpr
-    a_y = np.zeros((len(X), 2))  # сверху decision_function(x_i), снизу метка класса
+    roc_array = np.zeros((len(X), 2))  # Г±ГўГҐГ°ГµГі fpr, Г±Г­ГЁГ§Гі tpr
+    a_y = np.zeros((len(X), 2))  # Г±ГўГҐГ°ГµГі decision_function(x_i), Г±Г­ГЁГ§Гі Г¬ГҐГІГЄГ  ГЄГ«Г Г±Г±Г 
     m = np.zeros(len(X))
 
-    # сортировка двумерного массива по строке m
+    # Г±Г®Г°ГІГЁГ°Г®ГўГЄГ  Г¤ГўГіГ¬ГҐГ°Г­Г®ГЈГ® Г¬Г Г±Г±ГЁГўГ  ГЇГ® Г±ГІГ°Г®ГЄГҐ m
     m = model.decision_function(X)
     a_y[:, 0] = np.array(m.T).astype(float)  # np.ravel(m.T)
     a_y[:, 1] = y.T
@@ -130,7 +128,7 @@ def roc_curve_own(model, X, y):
     l_a_y = sorted(l_a_y, key=lambda x: x[0])
     a_y_sorted = np.asarray(l_a_y)
 
-    # заполняем roc_array tpr и fpr
+    # Г§Г ГЇГ®Г«Г­ГїГҐГ¬ roc_array tpr ГЁ fpr
     if a_y_sorted[len(X) - 1, 1] == 0:
         roc_array[len(X) - 1, 0] = 1
     else:
@@ -160,7 +158,7 @@ def roc_curve_own(model, X, y):
 
 def grid_search_best_params():
     """
-    поиск оптимальных параметров svc модели
+    РїРѕРёСЃРє РѕРїС‚РёРјР°Р»СЊРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ
     :return:
     """
     param_grid = {'C': [0.1, 1, 10, 100, 1000],
@@ -179,6 +177,11 @@ def grid_search_best_params():
 
 
 def tf_idf_representation(csv_file):
+    """
+    РІРµРєС‚РѕСЂРёР·Р°С†РёСЏ С‚РµРєСЃС‚РѕРІ СЃ РїРѕРјРѕС‰СЊСЋ tf-idf
+    :param csv_file:
+    :return:
+    """
     texts = list(csv_file['0'])
     labels = list(csv_file['1'])
 
@@ -192,53 +195,68 @@ def tf_idf_representation(csv_file):
     return representations, labels
 
 
-start_time = time.time()
+if __name__ == "__main__":
 
-imdb_dir: str = 'D:\\datasets\\aclImdb'
-train_dir = os.path.join(imdb_dir, 'train')
-test_dir = os.path.join(imdb_dir, 'test')
-stop_words = set(stopwords.words('english'))
+    start_time = time.time()
 
-# region make_csv
-# Xy_train = csv_from_txts(train_dir)
-# Xy_test = csv_from_txts(test_dir)
-# pd.DataFrame(np.append(Xy_train, Xy_test, axis=0)).to_csv("imdb.csv")
-# endregion
+    if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:
+        glove_dir = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\glove.6B'
+        imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
+        train_dir = os.path.join(imdb_dir, 'train')
+        test_dir = os.path.join(imdb_dir, 'test')
+        imdb_csv = 'С‚РІРѕР№ РїСѓС‚СЊ'
+        to_imdb_csv = 'С‚РІРѕР№ РїСѓС‚СЊ'
+    else:
+        imdb_dir: str = 'D:\\datasets\\aclImdb'
+        train_dir = os.path.join(imdb_dir, 'train')
+        test_dir = os.path.join(imdb_dir, 'test')
+        imdb_csv = 'D:\\datasets\\csv_files\\imdb.csv'
+        to_imdb_csv = 'D:\\datasets\\csv_files'
 
-# загрузка данных, формирование тренировочной и тестовой выборок
-imdb_data = pd.read_csv('imdb.csv')
-X, y = tf_idf_representation(imdb_data)
+    stop_words = set(stopwords.words('english'))
 
-# масштабирование выборок
-scaler = StandardScaler().fit_transform(X)
+    # region make_csv
+    # Xy_train = csv_from_txts(train_dir)
+    # Xy_test = csv_from_txts(test_dir)
+    # pd.DataFrame(np.append(Xy_train, Xy_test, axis=0)).to_csv(to_imdb_csv)
+    # endregion
 
-# разделение выборки на тренировочную и тестовую
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
+    # Р·Р°РіСЂСѓР·РєР° РґР°РЅРЅС‹С…, РІРµРєС‚РѕСЂРёР·Р°С†РёСЏ С‚РµРєСЃС‚РѕРІ
+    imdb_data = pd.read_csv(imdb_csv)
+    X, y = tf_idf_representation(imdb_data)
 
-# grid_search_best_params()
+    # РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ РґР°РЅРЅС‹С…
+    scaler = StandardScaler().fit_transform(X)
 
-# region двумерный график tsne
-# построение графика сниженной размерности
-# a = np.append(X_test[:50], X_test[-50:], axis=0)
-# b = np.append(y_test[:50], y_test[-50:], axis=0)
-# dim_reduction_plot_tsne(X_test, y_test)
-# endregion
+    # СЂР°Р·РґРµР»РµРЅРёРµ РґР°РЅРЅС‹С… РЅР° С‚СЂРµРЅРёСЂРѕРІРѕС‡РЅСѓСЋ Рё С‚РµСЃС‚РѕРІСѓСЋ РІС‹Р±РѕСЂРєРё
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
 
-# nonlinear svm
-# clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma=1, coef0=0.0, shrinking=True,
-#                     probability=False, tol=0.001, cache_size=1000, class_weight=None,
-#                     verbose=True, max_iter=-1, decision_function_shape="ovr", random_state=0)
-clf_SVC = SVC()
-clf_SVC.fit(X_train, y_train)
+    # grid_search_best_params()
 
-print('Accuracy of SVC on training set: {:.2f}'.format(clf_SVC.score(X_train, y_train) * 100))
-print('Accuracy of SVC on test set: {:.2f}'.format(clf_SVC.score(X_test, y_test) * 100))
+    # region РїРѕСЃС‚СЂРѕРµРЅРёРµ РіСЂР°С„РёРєР° tsne
+    # РїРѕСЃС‚СЂРѕРµРЅРёРµ РіСЂР°С„РёРєР° СЃРЅРёР¶РµРЅРЅРѕР№ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё
+    # a = np.append(X_test[:50], X_test[-50:], axis=0)
+    # b = np.append(y_test[:50], y_test[-50:], axis=0)
+    # dim_reduction_plot_tsne(X_test, y_test)
+    # endregion
 
-# roc_curve
-# roc_curve_own(clf_SVC, X_test, y_test)
+    # nonlinear svm
+    # clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma=1, coef0=0.0, shrinking=True,
+    #                     probability=False, tol=0.001, cache_size=1000, class_weight=None,
+    #                     verbose=True, max_iter=-1, decision_function_shape="ovr", random_state=0)
+    clf_SVC = SVC()
+    clf_SVC.fit(X_train, y_train)
 
-# confusion_matrix
-conf_matrix = confusion_matrix(clf_SVC.predict(X_test), y_test)
+    print('Accuracy of SVC on training set: {:.2f}'.format(clf_SVC.score(X_train, y_train) * 100))
+    print('Accuracy of SVC on test set: {:.2f}'.format(clf_SVC.score(X_test, y_test) * 100))
 
-total_time = round((time.time() - start_time))
-print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
+    # roc_curve
+    # roc_curve_own(clf_SVC, X_test, y_test)
+
+    # confusion_matrix
+    conf_matrix = confusion_matrix(clf_SVC.predict(X_test), y_test)
+
+    total_time = round((time.time() - start_time))
+    print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
+
+    # TODO: check word2vec representations

@@ -1,0 +1,5 @@
+﻿-смайлики надо исключать, тк алгоритм запоминает их и выдает ответ по их наличию
+-редкие стеммы подавать не надо, тк сеть запомнит окрас стема и сразу выдаст ответ
+- word2vec theory https://neurohive.io/ru/osnovy-data-science/word2vec-vektornye-predstavlenija-slov-dlja-mashinnogo-obuchenija/
+- wor2vec example https://stackabuse.com/implementing-word2vec-with-gensim-library-in-python/
+- https://machinelearningmastery.com/develop-word-embeddings-python-gensim/

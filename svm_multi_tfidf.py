@@ -7,13 +7,14 @@ import pandas as pd
 import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
 from nltk import word_tokenize, PorterStemmer
+from nltk.corpus import stopwords
 from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import StandardScaler, MultiLabelBinarizer
-from sklearn.svm import LinearSVC, SVC
+from sklearn.svm import LinearSVC
 from tok import word_tokenize
 
 
@@ -22,8 +23,6 @@ def tokenizer(text):
     форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
     regexp, stop_words, lowercase, stemmer
     """
-    f = open('english_stop_words', 'r')
-    stop_words = [line.strip() for line in f]
 
     ps = PorterStemmer()
     result = word_tokenize(text)
@@ -251,6 +250,11 @@ def csv_from_txts(directory):
 
 
 def tf_idf_representation(csv_file):
+    """
+    векторизация текстов с помощью tf-idf
+    :param csv_file:
+    :return:
+    """
     texts = list(csv_file['text'])
     labels = list(csv_file['label'])
 
@@ -275,58 +279,54 @@ def tf_idf_representation(csv_file):
     return representations, labels
 
 
-start_time = time.time()
+if __name__ == "__main__":
 
-# constants
-glove_dir = 'D:\\datasets\\glove.6B'
-newsgroup_dir = 'D:\\datasets\\20_newsgroups'
-reuters_dir = 'D:\\datasets\\reuters\\texts'
-labels_cnt = 90
+    start_time = time.time()
 
-# region make csv file
-# reuters = csv_from_txts(reuters_dir)
-# pd.DataFrame(reuters).to_csv("reuters.csv")
-# endregion
+    if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:
+        glove_dir = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\glove.6B'
+        imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
+        train_dir = os.path.join(imdb_dir, 'train')
+        test_dir = os.path.join(imdb_dir, 'test')
+        reuters_csv = 'твой путь'
+        to_reuters_csv = 'твой путь'
+    else:
+        imdb_dir: str = 'D:\\datasets\\aclImdb'
+        train_dir = os.path.join(imdb_dir, 'train')
+        test_dir = os.path.join(imdb_dir, 'test')
+        reuters_csv = 'D:\\datasets\\csv_files\\reuters.csv'
+        to_reuters_csv = 'D:\\datasets\\csv_files'
 
-# загрузка данных, формирование тренировочной и тестовой выборок
-reuters_data = pd.read_csv('reuters.csv')
-X, y = tf_idf_representation(reuters_data)
+    stop_words = set(stopwords.words('english'))
 
-# масштабирование выборки
-scaler = StandardScaler()
-scaler.fit_transform(X)
+    # region make csv file
+    # reuters = csv_from_txts(reuters_dir)
+    # pd.DataFrame(reuters).to_csv(to_reuters_csv)
+    # endregion
 
-# разделение на тренировочную и тестовую выборки
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
+    # загрузка данных, формирование тренировочной и тестовой выборок
+    reuters_data = pd.read_csv(reuters_csv)
+    X, y = tf_idf_representation(reuters_data)
 
-# построение трехмерного графика сниженной размерности
-# dim_reduction_plot_tsne(X_test, y_test)
+    # масштабирование выборки
+    scaler = StandardScaler()
+    scaler.fit_transform(X)
 
-# nonlinear svm
-clf_SVC = OneVsRestClassifier(LinearSVC())
-# clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma='auto', coef0=0.0, shrinking=True,
-#               probability=False, tol=0.001, cache_size=1000, class_weight=None,
-#               verbose=0, max_iter=-1, decision_function_shape="ovr", random_state=0)
-clf_SVC.fit(X_train, y_train)
+    # разделение на тренировочную и тестовую выборки
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
 
-# answers = clf_SVC.predict(X_test)
-# results = np.zeros(90)
-# difference = 0
-# for i in range(answers.shape[0]):
-#     for j in range(len(answers[0])):
-#         if answers[i][j] != y_test[i][j]:
-#             difference += 1
-#
-# print((answers.shape[0]*answers.shape[1]-2091)/(answers.shape[0]*answers.shape[1]))
-#
-# for i in range(90):
-#     print("Точность предсказания", i, "-го класса = ", accuracy_score(y_test[:, i], clf_SVC.predict(X_test)[:, i]))
-#     results[i] = (accuracy_score(y_test[:, i], clf_SVC.predict(X_test)[:, i]))
-#
-# print("Точность предсказания в среднем по классам = ", results.mean())
+    # построение трехмерного графика сниженной размерности
+    # dim_reduction_plot_tsne(X_test, y_test)
 
-print('Accuracy of SVC on training set: {:.2f}'.format(clf_SVC.score(X_train, y_train) * 100))
-print('Accuracy of SVC on test set: {:.2f}'.format(clf_SVC.score(X_test, y_test) * 100))
+    # nonlinear svm
+    clf_SVC = OneVsRestClassifier(LinearSVC())
+    # clf_SVC = SVC(C=0.1, kernel='rbf', degree=3, gamma='auto', coef0=0.0, shrinking=True,
+    #               probability=False, tol=0.001, cache_size=1000, class_weight=None,
+    #               verbose=0, max_iter=-1, decision_function_shape="ovr", random_state=0)
+    clf_SVC.fit(X_train, y_train)
 
-total_time = round((time.time() - start_time))
-print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
+    print('Accuracy of SVC on training set: {:.2f}'.format(clf_SVC.score(X_train, y_train) * 100))
+    print('Accuracy of SVC on test set: {:.2f}'.format(clf_SVC.score(X_test, y_test) * 100))
+
+    total_time = round((time.time() - start_time))
+    print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
