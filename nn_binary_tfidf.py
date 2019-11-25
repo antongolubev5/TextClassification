@@ -272,7 +272,7 @@ def tf_idf_representation(csv_file):
 
 def generate_model(input_shape):
     """
-    создание и обучение модели
+    построение модели
     :return:
     """
     model = models.Sequential()
@@ -322,8 +322,7 @@ def accuracy_graph(model_history):
 
 
 if __name__ == "__main__":
-    # test
-    a = []
+
     start_time = time.time()
     stop_words = set(stopwords.words('english'))
 
@@ -343,9 +342,6 @@ if __name__ == "__main__":
         imdb_csv = 'D:\\datasets\\csv_files\\imdb.csv'
         to_imdb_csv = 'D:\\datasets\\csv_files'
 
-    # загрузка embedding'ов
-    embeddings_index = embeddings_download(glove_dir)
-
     # region make_csv
     # Xy_train = csv_from_txts(train_dir)
     # Xy_test = csv_from_txts(test_dir)
@@ -362,10 +358,11 @@ if __name__ == "__main__":
 
     # разделение выборки на тренировочную, тестовую и валидационную
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
-    X_val = X_train[:10000]
-    X_train = X_train[10000:]
-    y_val = y_train[:10000]
-    y_train = y_train[10000:]
+    val_size = round(len(X_train)*0.33)
+    X_val = X_train[:val_size]
+    X_train = X_train[val_size:]
+    y_val = y_train[:val_size]
+    y_train = y_train[val_size:]
 
     mdl = generate_model(X.shape[1])
     history = mdl.fit(X_train,

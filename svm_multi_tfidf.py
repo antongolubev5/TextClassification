@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from keras.utils.np_utils import to_categorical
 from mpl_toolkits.mplot3d import Axes3D
 from nltk import word_tokenize, PorterStemmer
 from nltk.corpus import stopwords
@@ -261,22 +262,21 @@ def tf_idf_representation(csv_file):
     for i in range(len(labels)):
         labels[i] = labels[i].strip('][').split(', ')
 
-    # label = [element.strip('][').split(', ') in label]
-
     corpus = list(map(tokenizer, texts))
 
     for i in range(len(corpus)):
         corpus[i] = " ".join(corpus[i])
 
-    mlb = MultiLabelBinarizer()
-    labels = mlb.fit_transform(labels)
+    labels = to_categorical(labels)
+    # mlb = MultiLabelBinarizer()
+    # labels = mlb.fit_transform(labels)
     # corpus = list(texts)
 
     vectorizer = TfidfVectorizer(decode_error='ignore', lowercase=True, stop_words='english',
                                  min_df=0.0001)
     representations = vectorizer.fit_transform(corpus).toarray()
 
-    return representations, labels
+    return representations, labels, vectorizer
 
 
 if __name__ == "__main__":
@@ -288,26 +288,26 @@ if __name__ == "__main__":
         imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
-        reuters_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files\\reuters.csv'
-        to_reuters_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files'
+        data_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files\\newsgroups.csv'
+        save_data_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files'
 
     else:
         imdb_dir: str = 'D:\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
-        reuters_csv = 'D:\\datasets\\csv_files\\reuters.csv'
-        to_reuters_csv = 'D:\\datasets\\csv_files'
+        data_csv = 'D:\\datasets\\csv_files\\newsgroups.csv'
+        save_data_csv = 'D:\\datasets\\csv_files'
 
     stop_words = set(stopwords.words('english'))
 
     # region make csv file
     # reuters = csv_from_txts(reuters_dir)
-    # pd.DataFrame(reuters).to_csv(to_reuters_csv)
+    # pd.DataFrame(reuters).to_csv(save_data_csv)
     # endregion
 
     # загрузка данных, формирование тренировочной и тестовой выборок
-    reuters_data = pd.read_csv(reuters_csv)
-    X, y = tf_idf_representation(reuters_data)
+    data = pd.read_csv(data_csv)
+    X, y, vector_mdl = tf_idf_representation(data)
 
     # масштабирование выборки
     scaler = StandardScaler()

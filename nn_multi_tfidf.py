@@ -16,8 +16,9 @@ from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MultiLabelBinarizer
 from tok import word_tokenize
+from keras.utils.np_utils import to_categorical
 
 
 def tokenizer(text):
@@ -265,35 +266,35 @@ def tf_idf_representation(csv_file):
     for i in range(len(labels)):
         labels[i] = labels[i].strip('][').split(', ')
 
-    # label = [element.strip('][').split(', ') in label]
-
     corpus = list(map(tokenizer, texts))
+    # corpus = list(texts)
 
     for i in range(len(corpus)):
         corpus[i] = " ".join(corpus[i])
 
-    mlb = MultiLabelBinarizer()
-    labels = mlb.fit_transform(labels)
+    # mlb = MultiLabelBinarizer()
+    # labels = mlb.fit_transform(labels)
+    labels = to_categorical(labels)
     # corpus = list(texts)
 
     vectorizer = TfidfVectorizer(decode_error='ignore', lowercase=True, stop_words='english',
-                                 min_df=0.0001)
+                                 min_df=0.002)
     representations = vectorizer.fit_transform(corpus).toarray()
 
-    return representations, labels
+    return representations, labels, vectorizer
 
 
 def generate_model(input_shape):
     """
-    создание и обучение модели
+    посмтроение модели
     :return:
     """
     model = models.Sequential()
-    model.add(layers.Dense(16, activation='relu', input_shape=(input_shape,)))
-    model.add(layers.Dense(16, activation='relu'))
-    model.add(layers.Dense(1, activation='sigmoid'))
+    model.add(layers.Dense(64, activation='relu', input_shape=(input_shape,)))
+    model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dense(90, activation='softmax'))
     model.compile(optimizer='rmsprop',
-                  loss='binary_crossentropy',
+                  loss='categorical_crossentropy',
                   metrics=['accuracy'])
     return model
 
@@ -335,8 +336,7 @@ def accuracy_graph(model_history):
 
 
 if __name__ == "__main__":
-    # test
-    a = []
+
     start_time = time.time()
     stop_words = set(stopwords.words('english'))
 
@@ -345,19 +345,16 @@ if __name__ == "__main__":
         imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
-        imdb_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files\\imdb.csv'
-        to_imdb_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files'
+        data_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files\\newsgroups.csv'
+        save_data_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files'
 
     else:
         glove_dir = 'D:\\datasets\\glove.6B'
         imdb_dir: str = 'D:\\datasets\\aclImdb'
         train_dir = os.path.join(imdb_dir, 'train')
         test_dir = os.path.join(imdb_dir, 'test')
-        imdb_csv = 'D:\\datasets\\csv_files\\imdb.csv'
-        to_imdb_csv = 'D:\\datasets\\csv_files'
-
-    # загрузка embedding'ов
-    embeddings_index = embeddings_download(glove_dir)
+        data_csv = 'D:\\datasets\\csv_files\\newsgroups.csv'
+        save_data_csv = 'D:\\datasets\\csv_files'
 
     # region make_csv
     # Xy_train = csv_from_txts(train_dir)
@@ -366,34 +363,36 @@ if __name__ == "__main__":
     # endregion
 
     # загрузка данных, векторизация текстов
-    imdb_data = pd.read_csv(imdb_csv)
+    data = pd.read_csv(data_csv)
 
-    X, y, vector_mdl = tf_idf_representation(imdb_data)
+    X, y, vector_mdl = tf_idf_representation(data)
 
     # масштабирование выборок
     scaler = StandardScaler().fit_transform(X)
 
     # разделение выборки на тренировочную, тестовую и валидационную
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
-    X_val = X_train[:10000]
-    X_train = X_train[10000:]
-    y_val = y_train[:10000]
-    y_train = y_train[10000:]
+    val_size = round(len(X_train)*0.33)
+    X_val = X_train[:val_size]
+    X_train = X_train[val_size:]
+    y_val = y_train[:val_size]
+    y_train = y_train[val_size:]
 
     mdl = generate_model(X.shape[1])
     history = mdl.fit(X_train,
                       y_train,
-                      epochs=5,
+                      epochs=10,
                       batch_size=512,
                       validation_data=(X_val, y_val))
     loss_graph(history)
     accuracy_graph(history)
     print(mdl.evaluate(X_test, y_test))
+    predictions = mdl.predict(X_test)
 
-    my_own_text = ["test"]
-    my_own_test = vector_mdl.transform(my_own_text)
-
-    print(mdl.predict(my_own_test))
+    # my_own_text = ["test"]
+    # my_own_test = vector_mdl.transform(my_own_text)
+    #
+    # print(mdl.predict(my_own_test))
 
     total_time = round((time.time() - start_time))
     print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
