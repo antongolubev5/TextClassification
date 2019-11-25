@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from keras import layers
-from keras import models
+from keras import layers, models, regularizers
 from keras.preprocessing.text import Tokenizer
 from mpl_toolkits.mplot3d import Axes3D
 from nltk.corpus import stopwords
@@ -18,6 +17,7 @@ from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tok import word_tokenize
+
 
 def tokenizer(text):
     """
@@ -270,14 +270,16 @@ def tf_idf_representation(csv_file):
     return representations, labels, vectorizer
 
 
-def generate_model(input_shape):
+def build_model(input_shape):
     """
     построение модели
     :return:
     """
     model = models.Sequential()
     model.add(layers.Dense(16, activation='relu', input_shape=(input_shape,)))
-    model.add(layers.Dense(16, activation='relu'))
+    model.add(layers.Dropout(0.5))
+    model.add(layers.Dense(16,  activation='relu'))
+    model.add(layers.Dropout(0.5))
     model.add(layers.Dense(1, activation='sigmoid'))
     model.compile(optimizer='rmsprop',
                   loss='binary_crossentropy',
@@ -358,26 +360,25 @@ if __name__ == "__main__":
 
     # разделение выборки на тренировочную, тестовую и валидационную
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
-    val_size = round(len(X_train)*0.33)
+    val_size = round(len(X_train) * 0.33)
     X_val = X_train[:val_size]
     X_train = X_train[val_size:]
     y_val = y_train[:val_size]
     y_train = y_train[val_size:]
 
-    mdl = generate_model(X.shape[1])
+    mdl = build_model(X.shape[1])
     history = mdl.fit(X_train,
                       y_train,
-                      epochs=5,
+                      epochs=7,
                       batch_size=512,
                       validation_data=(X_val, y_val))
     loss_graph(history)
     accuracy_graph(history)
     print(mdl.evaluate(X_test, y_test))
 
-    my_own_text = ["test"]
-    my_own_test = vector_mdl.transform(my_own_text)
-
-    print(mdl.predict(my_own_test))
+    # my_own_text = ["test"]
+    # my_own_test = vector_mdl.transform(my_own_text)
+    # print(mdl.predict(my_own_test))
 
     total_time = round((time.time() - start_time))
     print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))

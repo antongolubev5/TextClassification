@@ -284,15 +284,17 @@ def tf_idf_representation(csv_file):
     return representations, labels, vectorizer
 
 
-def generate_model(input_shape):
+def build_model(input_shape, output_shape):
     """
-    посмтроение модели
+    построение модели
+    :param input_shape: входной слой = число признаков
+    :param output_shape: выходной слой = число классов
     :return:
     """
     model = models.Sequential()
     model.add(layers.Dense(64, activation='relu', input_shape=(input_shape,)))
     model.add(layers.Dense(64, activation='relu'))
-    model.add(layers.Dense(90, activation='softmax'))
+    model.add(layers.Dense(output_shape, activation='softmax'))
     model.compile(optimizer='rmsprop',
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
@@ -339,6 +341,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
     stop_words = set(stopwords.words('english'))
+    num_classes = 20
 
     if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:
         glove_dir = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\glove.6B'
@@ -378,7 +381,7 @@ if __name__ == "__main__":
     y_val = y_train[:val_size]
     y_train = y_train[val_size:]
 
-    mdl = generate_model(X.shape[1])
+    mdl = build_model(X.shape[1], num_classes)
     history = mdl.fit(X_train,
                       y_train,
                       epochs=10,
