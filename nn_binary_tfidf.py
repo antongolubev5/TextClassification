@@ -287,6 +287,23 @@ def build_model(input_shape):
     return model
 
 
+def build_model_rnn(input_shape):
+    """
+    построение модели rnn
+    :return:
+    """
+    model = models.Sequential()
+    model.add(layers.Dense(16, activation='relu', input_shape=(input_shape,)))
+    model.add(layers.Dropout(0.5))
+    model.add(layers.SimpleRNN(16))
+    model.add(layers.Dropout(0.5))
+    model.add(layers.Dense(1, activation='sigmoid'))
+    model.compile(optimizer='rmsprop',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+    return model
+
+
 def loss_graph(model_history):
     """
     график потерь на этапах обучения и проверки
@@ -352,7 +369,6 @@ if __name__ == "__main__":
 
     # загрузка данных, векторизация текстов
     imdb_data = pd.read_csv(imdb_csv)
-
     X, y, vector_mdl = tf_idf_representation(imdb_data)
 
     # масштабирование выборок
@@ -366,7 +382,7 @@ if __name__ == "__main__":
     y_val = y_train[:val_size]
     y_train = y_train[val_size:]
 
-    mdl = build_model(X.shape[1])
+    mdl = build_model_rnn(X.shape[1])
     history = mdl.fit(X_train,
                       y_train,
                       epochs=7,
@@ -375,7 +391,7 @@ if __name__ == "__main__":
     loss_graph(history)
     accuracy_graph(history)
     print(mdl.evaluate(X_test, y_test))
-
+    print(mdl.summary())
     # my_own_text = ["test"]
     # my_own_test = vector_mdl.transform(my_own_text)
     # print(mdl.predict(my_own_test))
