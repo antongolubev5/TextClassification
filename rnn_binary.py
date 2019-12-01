@@ -295,9 +295,9 @@ def build_model_rnn(input_shape):
     :return:
     """
     model = models.Sequential()
-    model.add(layers.Dense(16, activation='relu', input_shape=(input_shape,)))
-    model.add(layers.Reshape((1, 16)))
-    model.add(layers.SimpleRNN(16))
+    # model.add(layers.Dense(16, activation='relu', input_shape=(input_shape,)))
+    # model.add(layers.Reshape((1, 16)))
+    model.add(layers.SimpleRNN(32))
     model.add(layers.Dense(1, activation='sigmoid'))
     model.compile(optimizer='rmsprop',
                   loss='binary_crossentropy',
@@ -374,7 +374,7 @@ if __name__ == "__main__":
     X, y = word_vectorizing(imdb_data, embeddings_dict, 150)
 
     # масштабирование выборок
-    #scaler = StandardScaler().fit_transform(X)
+    # scaler = StandardScaler().fit_transform(X)
 
     # разделение выборки на тренировочную, тестовую и валидационную
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
