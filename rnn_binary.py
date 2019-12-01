@@ -26,7 +26,7 @@ def tokenizer(text):
     """
     ps = PorterStemmer()
     result = word_tokenize(text)
-    drop = [ps.stem(element).lower() for element in result if not (element in stop_words)]
+    drop = [element.lower() for element in result if not (element in stop_words)]
 
     return drop
 
@@ -244,22 +244,49 @@ def roc_curve_own(model, X, y):
     plt.show()
 
 
-def tf_idf_representation(csv_file):
+def glove_representation(glove_dir):
     """
-    векторизация текстов с помощью tf-idf
-    :param csv_file:
+    перенос glove-представлений слов из txt файла в словарь
+    :param glove_dir:
     :return:
     """
+    embeddings_dict = {}
+
+    with open(glove_dir + '\\glove.6B.100d.txt', 'r', encoding='utf-8') as f:
+        for line in f:
+            values = line.split()
+            word = values[0]
+            vector = np.asarray(values[1:], "float32")
+            embeddings_dict[word] = vector
+
+    return embeddings_dict
+
+
+def word_vectorizing(csv_file, embeddings_dict, maxlen):
+    """
+    векторизация текстов с помощью glove representations
+    :param csv_file: датасет
+    :param embeddings_dict: словарь представления слов
+    :param maxlen: фиксированная длина отзыва
+    :return:
+    """
+    glove_len = len(list(embeddings_dict.values())[0])
+
     texts = list(csv_file['0'])
+    texts = [tokenizer(text) for text in texts]
+
     labels = np.asarray(list(csv_file['1'])).astype('float32')
 
-    # corpus = list(map(tokenizer_tfidf, texts))
-    corpus = list(texts)
-    vectorizer = TfidfVectorizer(ngram_range=[1, 2], decode_error='ignore', lowercase=True, stop_words='english',
-                                 min_df=0.001)
-    representations = vectorizer.fit_transform(corpus).toarray()
+    representations = np.zeros((len(texts), maxlen, glove_len))
 
-    return representations, labels, vectorizer
+    for i in range((len(texts))):
+        for j in range(min(len(texts[i]), maxlen)):
+            if texts[i][j] in embeddings_dict.keys():
+                representations[i][j] = embeddings_dict[texts[i][j]]
+            else:
+                representations[i][j] = np.zeros(100)
+
+    return representations, labels
 
 
 def build_model_rnn(input_shape):
@@ -269,10 +296,8 @@ def build_model_rnn(input_shape):
     """
     model = models.Sequential()
     model.add(layers.Dense(16, activation='relu', input_shape=(input_shape,)))
-    # model.add(layers.Dropout(0.5))
     model.add(layers.Reshape((1, 16)))
     model.add(layers.SimpleRNN(16))
-    # model.add(layers.Dropout(0.5))
     model.add(layers.Dense(1, activation='sigmoid'))
     model.compile(optimizer='rmsprop',
                   loss='binary_crossentropy',
@@ -345,10 +370,11 @@ if __name__ == "__main__":
 
     # загрузка данных, векторизация текстов
     imdb_data = pd.read_csv(imdb_csv)
-    X, y, vector_mdl = tf_idf_representation(imdb_data)
+    embeddings_dict = glove_representation(glove_dir)
+    X, y = word_vectorizing(imdb_data, embeddings_dict, 150)
 
     # масштабирование выборок
-    scaler = StandardScaler().fit_transform(X)
+    #scaler = StandardScaler().fit_transform(X)
 
     # разделение выборки на тренировочную, тестовую и валидационную
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
