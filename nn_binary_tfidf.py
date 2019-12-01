@@ -279,23 +279,6 @@ def build_model(input_shape):
     return model
 
 
-def build_model_rnn(input_shape):
-    """
-    построение модели rnn
-    :return:
-    """
-    model = models.Sequential()
-    model.add(layers.Dense(16, activation='relu', input_shape=(input_shape,)))
-    # model.add(layers.Dropout(0.5))
-    model.add(layers.SimpleRNN(16))
-    # model.add(layers.Dropout(0.5))
-    model.add(layers.Dense(1, activation='sigmoid'))
-    model.compile(optimizer='rmsprop',
-                  loss='binary_crossentropy',
-                  metrics=['accuracy'])
-    return model
-
-
 def loss_graph(model_history):
     """
     график потерь на этапах обучения и проверки
