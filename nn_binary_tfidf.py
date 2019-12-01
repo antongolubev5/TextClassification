@@ -24,14 +24,9 @@ def tokenizer(text):
     форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
     возвращает предложение как список
     """
-    # regexp, stop_words, lowercase, stemmer
-
     ps = PorterStemmer()
     result = word_tokenize(text)
-    drop = []
-    for element in result:
-        if not (element in stop_words):
-            drop.append(ps.stem(element).lower())
+    drop = [ps.stem(element).lower() for element in result if not (element in stop_words)]
 
     return drop
 
@@ -45,10 +40,7 @@ def tokenizer_tfidf(text):
 
     ps = PorterStemmer()
     result = word_tokenize(text)
-    drop = []
-    for element in result:
-        if not (element in stop_words):
-            drop.append(ps.stem(element).lower())
+    drop = [ps.stem(element).lower() for element in result if not (element in stop_words)]
 
     return ' '.join(drop)
 
@@ -294,9 +286,9 @@ def build_model_rnn(input_shape):
     """
     model = models.Sequential()
     model.add(layers.Dense(16, activation='relu', input_shape=(input_shape,)))
-    model.add(layers.Dropout(0.5))
+    # model.add(layers.Dropout(0.5))
     model.add(layers.SimpleRNN(16))
-    model.add(layers.Dropout(0.5))
+    # model.add(layers.Dropout(0.5))
     model.add(layers.Dense(1, activation='sigmoid'))
     model.compile(optimizer='rmsprop',
                   loss='binary_crossentropy',
