@@ -334,7 +334,7 @@ def build_model_rnn_with_embedding(max_features, embed_len):
     """
     model = models.Sequential()
     model.add(layers.Embedding(max_features, embed_len))
-    model.add(layers.SimpleRNN(embed_len))
+    model.add(layers.LSTM(embed_len))
     model.add(layers.Dense(1, activation='sigmoid'))
     model.compile(optimizer='rmsprop',
                   loss='binary_crossentropy',
@@ -410,8 +410,10 @@ if __name__ == "__main__":
     # endregion
 
     # загрузка данных, векторизация текстов
-    max_features = 10000
+    max_features = 20000
     max_len = 700
+    embed_len = 32
+
     imdb_data = pd.read_csv(imdb_csv)
     embeddings_dict = glove_representation(glove_dir)
     # X, y = word_vectorizing(imdb_data, embeddings_dict, max_len)
@@ -434,11 +436,11 @@ if __name__ == "__main__":
     y_train = y_train[val_size:]
 
     # (max_words, embedding_dim, embedding_matrix, maxlen)
-    mdl = build_model_rnn_with_embedding(10000, 32)
+    mdl = build_model_rnn_with_embedding(max_features, embed_len)
 
     history = mdl.fit(X_train,
                       y_train,
-                      epochs=4,
+                      epochs=7,
                       batch_size=128,
                       validation_split=0.2)
     loss_graph(history)
