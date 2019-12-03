@@ -7,6 +7,8 @@ import pandas as pd
 import seaborn as sns
 from keras import layers, models, regularizers
 from keras.preprocessing.text import Tokenizer
+from keras.preprocessing import sequence
+from keras.datasets import imdb
 from mpl_toolkits.mplot3d import Axes3D
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
@@ -17,6 +19,8 @@ from sklearn.manifold import TSNE
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tok import word_tokenize
+from keras.preprocessing.text import one_hot
+from keras.preprocessing.sequence import pad_sequences
 
 
 def tokenizer(text):
@@ -36,11 +40,9 @@ def tokenizer_tfidf(text):
     форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
     возвращает предложение как строку
     """
-    # regexp, stop_words, lowercase, stemmer
-
     ps = PorterStemmer()
     result = word_tokenize(text)
-    drop = [ps.stem(element).lower() for element in result if not (element in stop_words)]
+    drop = [element.lower() for element in result if not (element in stop_words)]
 
     return ' '.join(drop)
 
@@ -262,6 +264,23 @@ def glove_representation(glove_dir):
     return embeddings_dict
 
 
+def word_vectorizing_keras(csv_file, max_features, max_len):
+    """
+    векторизация текстов с помощью встроенного keras-функционала
+    :param csv_file: датасет
+    :param max_features: размер алфавита
+    :param max_len: макс длина вектора-текста
+    :return:
+    """
+    labels = np.asarray(list(csv_file['1'])).astype('float32')
+    texts = list(csv_file['0'])
+
+    X = [one_hot(text, max_features) for text in texts]
+    X = pad_sequences(X, maxlen=max_len)
+
+    return X, labels
+
+
 def word_vectorizing(csv_file, embeddings_dict, maxlen):
     """
     векторизация текстов с помощью glove representations
@@ -277,7 +296,7 @@ def word_vectorizing(csv_file, embeddings_dict, maxlen):
 
     labels = np.asarray(list(csv_file['1'])).astype('float32')
 
-    representations = np.zeros((len(texts), maxlen, glove_len))
+    representations = np.zeros((len(texts), maxlen, glove_len), dtype='float32')
 
     for i in range((len(texts))):
         for j in range(min(len(texts[i]), maxlen)):
@@ -289,15 +308,33 @@ def word_vectorizing(csv_file, embeddings_dict, maxlen):
     return representations, labels
 
 
-def build_model_rnn(input_shape):
+def build_model_rnn(embed_len):
     """
     построение модели rnn
+    :param embed_len: длина векторного представления
     :return:
     """
     model = models.Sequential()
-    # model.add(layers.Dense(16, activation='relu', input_shape=(input_shape,)))
-    # model.add(layers.Reshape((1, 16)))
-    model.add(layers.SimpleRNN(32))
+    # model.add(layers.SimpleRNN(embed_len, return_sequences=True))
+    # model.add(layers.SimpleRNN(embed_len, return_sequences=True))
+    model.add(layers.SimpleRNN(embed_len))
+    model.add(layers.Dense(1, activation='sigmoid'))
+    model.compile(optimizer='rmsprop',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+    return model
+
+
+def build_model_rnn_with_embedding(max_features, embed_len):
+    """
+    построение модели rnn со слоем embedding
+    :param max_features: кол во слов в алфавите
+    :param embed_len: длина векторного представления
+    :return:
+    """
+    model = models.Sequential()
+    model.add(layers.Embedding(max_features, embed_len))
+    model.add(layers.SimpleRNN(embed_len))
     model.add(layers.Dense(1, activation='sigmoid'))
     model.compile(optimizer='rmsprop',
                   loss='binary_crossentropy',
@@ -353,6 +390,8 @@ if __name__ == "__main__":
         test_dir = os.path.join(imdb_dir, 'test')
         imdb_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files\\imdb.csv'
         to_imdb_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files'
+        X_path = 'D:\\datasets\\npy\\X.npy'
+        y_path = 'D:\\datasets\\npy\\y.npy'
 
     else:
         glove_dir = 'D:\\datasets\\glove.6B'
@@ -361,6 +400,8 @@ if __name__ == "__main__":
         test_dir = os.path.join(imdb_dir, 'test')
         imdb_csv = 'D:\\datasets\\csv_files\\imdb.csv'
         to_imdb_csv = 'D:\\datasets\\csv_files'
+        X_path = 'D:\\datasets\\npy\\X.npy'
+        y_path = 'D:\\datasets\\npy\\y.npy'
 
     # region make_csv
     # Xy_train = csv_from_txts(train_dir)
@@ -369,12 +410,20 @@ if __name__ == "__main__":
     # endregion
 
     # загрузка данных, векторизация текстов
+    max_features = 10000
+    max_len = 700
     imdb_data = pd.read_csv(imdb_csv)
     embeddings_dict = glove_representation(glove_dir)
-    X, y = word_vectorizing(imdb_data, embeddings_dict, 150)
+    # X, y = word_vectorizing(imdb_data, embeddings_dict, max_len)
+    X, y = word_vectorizing_keras(imdb_data, max_features, max_len)
+
+    # np.save("X", X)
+    # np.save("y", y)
+    # X = np.load(X_path)
+    # y = np.load(y_path)
 
     # масштабирование выборок
-    # scaler = StandardScaler().fit_transform(X)
+    # Scaler = StandardScaler().fit_transform(X)
 
     # разделение выборки на тренировочную, тестовую и валидационную
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
@@ -384,16 +433,19 @@ if __name__ == "__main__":
     y_val = y_train[:val_size]
     y_train = y_train[val_size:]
 
-    mdl = build_model_rnn(X.shape[1])
+    # (max_words, embedding_dim, embedding_matrix, maxlen)
+    mdl = build_model_rnn_with_embedding(10000, 32)
+
     history = mdl.fit(X_train,
                       y_train,
-                      epochs=7,
-                      batch_size=512,
-                      validation_data=(X_val, y_val))
+                      epochs=4,
+                      batch_size=128,
+                      validation_split=0.2)
     loss_graph(history)
     accuracy_graph(history)
     print(mdl.evaluate(X_test, y_test))
     print(mdl.summary())
+
     # my_own_text = ["test"]
     # my_own_test = vector_mdl.transform(my_own_text)
     # print(mdl.predict(my_own_test))
