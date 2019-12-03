@@ -8,7 +8,8 @@ https://www.kaggle.com/crawford/20-newsgroups
 
 Обработка текстовой информации:
 * Glove: https://nlp.stanford.edu/projects/glove/
-* tf-idf representation
+* tf-idf representations
+* word2vec
 
 Данные и векторные представления слов:
 * https://yadi.sk/d/8AoxEBOzCkWtjw
@@ -16,3 +17,6 @@ https://www.kaggle.com/crawford/20-newsgroups
 Сравнение методов классификации текстов:
 * SVM для бинарной классификации 
 * SVM для мультиклассовой классификации
+* RNN
+* LSTM
+
