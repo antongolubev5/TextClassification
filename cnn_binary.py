@@ -28,7 +28,6 @@ def tokenizer(text):
     форматирование строки https://github.com/kootenpv/tok/blob/master/README.md
     возвращает предложение как список
     """
-    ps = PorterStemmer()
     result = word_tokenize(text)
     drop = [element.lower() for element in result if not (element in stop_words)]
 
@@ -308,9 +307,9 @@ def word_vectorizing(csv_file, embeddings_dict, maxlen):
     return representations, labels
 
 
-def build_model_rnn(embed_len):
+def build_model_cnn(embed_len):
     """
-    построение модели rnn
+    построение модели cnn
     :param embed_len: длина векторного представления
     :return:
     """
@@ -325,20 +324,24 @@ def build_model_rnn(embed_len):
     return model
 
 
-def build_model_rnn_with_embedding(max_features, embed_len):
+def build_model_cnn_with_embedding(max_features, embed_len):
     """
-    построение модели rnn со слоем embedding
+    построение модели cnn со слоем embedding
     :param max_features: кол во слов в алфавите
     :param embed_len: длина векторного представления
     :return:
     """
     model = models.Sequential()
-    model.add(layers.Embedding(max_features, embed_len))
-    model.add(layers.LSTM(embed_len))
-    model.add(layers.Dense(1, activation='sigmoid'))
+    model.add(layers.Embedding(max_features, embed_len, input_length=max_len))
+    model.add(layers.Conv1D(32, 7, activation='relu'))
+    model.add(layers.MaxPooling1D(5))
+    model.add(layers.Conv1D(32, 7, activation='relu'))
+    model.add(layers.GlobalMaxPooling1D())
+    model.add(layers.Dense(1))
     model.compile(optimizer='rmsprop',
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
+
     return model
 
 
@@ -410,8 +413,8 @@ if __name__ == "__main__":
     # endregion
 
     # загрузка данных, векторизация текстов
-    max_features = 20000
-    max_len = 700
+    max_features = 10000
+    max_len = 500
     embed_len = 32
 
     imdb_data = pd.read_csv(imdb_csv)
@@ -436,11 +439,11 @@ if __name__ == "__main__":
     y_train = y_train[val_size:]
 
     # (max_words, embedding_dim, embedding_matrix, maxlen)
-    mdl = build_model_rnn_with_embedding(max_features, embed_len)
+    mdl = build_model_cnn_with_embedding(max_features, embed_len)
 
     history = mdl.fit(X_train,
                       y_train,
-                      epochs=7,
+                      epochs=2,
                       batch_size=128,
                       validation_split=0.2)
     loss_graph(history)
