@@ -290,6 +290,7 @@ if __name__ == "__main__":
         test_dir = os.path.join(imdb_dir, 'test')
         imdb_csv = 'D:\\datasets\\csv_files\\imdb_mean.csv'
         to_imdb_csv = 'D:\\datasets\\csv_files'
+
     stop_words = set(stopwords.words('english'))
 
     # загрузка embedding'ов
