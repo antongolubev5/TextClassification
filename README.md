@@ -19,4 +19,4 @@ https://www.kaggle.com/crawford/20-newsgroups
 * SVM для мультиклассовой классификации
 * RNN
 * LSTM
-
+* CNN
