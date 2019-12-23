@@ -6,6 +6,9 @@ https://www.kaggle.com/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews
 * Многоклассовая классификация: 20 групп сообщений на различные темы
 https://www.kaggle.com/crawford/20-newsgroups
 
+* Корпус коротких текстов на русском языке на основе Twitter by Рубцова Ю.
+http://study.mokoron.com/
+
 Обработка текстовой информации:
 * Glove: https://nlp.stanford.edu/projects/glove/
 * tf-idf representations
