@@ -3,3 +3,4 @@
 - word2vec theory https://neurohive.io/ru/osnovy-data-science/word2vec-vektornye-predstavlenija-slov-dlja-mashinnogo-obuchenija/
 - wor2vec example https://stackabuse.com/implementing-word2vec-with-gensim-library-in-python/
 - https://machinelearningmastery.com/develop-word-embeddings-python-gensim/
+- https://webdevblog.ru/gensim-rukovodstvo-dlya-nachinajushhih/ - руководство gensim
