@@ -5,56 +5,74 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from gensim.models import Word2Vec, KeyedVectors
 from keras import layers, models, Sequential
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+from nltk.stem.snowball import SnowballStemmer
+from nltk.tokenize import TweetTokenizer
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
-from tok import word_tokenize
-import matplotlib.pyplot as plt
-from gensim.models.word2vec import Word2Vec
+from keras.models import load_model
 
 
-def tokenizer(text):
+def tweet_tokenizer(text, use_stop_words, stemming):
     """
     форматирование строки:
     приведение к нижнему регистру;
     удаление интернет-ссылок и упоминания имен пользователей через @
     удаление знаков пунктуации;
     удаление стоп слов;
-    токенизация (встроенный nltk)
+    удаление дат и знаков пунктуации
+    оставляем смайлики
+    токенизация (встроенный nltk.tweet tokenizer)
     """
 
-    # ps = PorterStemmer()
-    text = re.sub('((www\.[^\s]+)|(https?://[^\s]+))', 'URL', text)
-    text = re.sub('@[^\s]+', 'USER', text)
-    text = re.sub('[^a-zA-Zа-яА-Я1-9]+', ' ', text)
+    tw_tok = TweetTokenizer()
+    result = ' '.join(tw_tok.tokenize(text))
 
-    result = word_tokenize(text)
+    result = re.sub('((www\.[^\s]+)|(https?://[^\s]+))', 'URL', result)
+    result = re.sub('@[^\s]+', 'USER', result)
+    result = re.sub('[^a-zA-Zа-яА-Я:):(]+', ' ', result)
 
-    drop = [element.lower() for element in result] #if not (element in stop_words) and len(element) > 1]
+    result = result.split(" ")
 
-    return drop
+    # punc_list = string.punctuation + '0123456789'
+    # t = str.maketrans(dict.fromkeys(punc_list, " "))
+    # text = text.lower().translate(t)
+
+    stemmer = SnowballStemmer("russian")
+
+    if use_stop_words and stemming:
+        output = [stemmer.stem(element) for element in result if not (element in stop_words)]
+
+    if use_stop_words:
+        output = [element.lower() for element in result if not (element in stop_words)]
+
+    if stemming:
+        output = [stemmer.stem(element) for element in result]
+
+    return output
 
 
 def embeddings_download(file_path):
     """
     загрузка представлений слов русскоязычной модели с rusvectores
     :param file_path: директория с файлами
-    :return: словарь: ключ - слово, значение - векторное представление слова
+    :return: model
     """
-    embeddings_index = {}
-    f = open(file_path, 'r', encoding='utf-8')
+    model = KeyedVectors.load_word2vec_format(file_path, binary=True)
+    # embeddings_index = {}
+    # f = open(file_path, 'r', encoding='utf-8')
+    #
+    # for line in f:
+    #     values = line.split()
+    #     word = values[0].split("_")[0]
+    #     coeffs = np.asarray(values[1:], dtype='float32')
+    #     embeddings_index[word] = coeffs
+    # f.close()
 
-    for line in f:
-        values = line.split()
-        word = values[0].split("_")[0]
-        coeffs = np.asarray(values[1:], dtype='float32')
-        embeddings_index[word] = coeffs
-    f.close()
-
-    return embeddings_index
+    return model
 
 
 def data_download(file_path):
@@ -66,23 +84,35 @@ def data_download(file_path):
     data_positive = pd.read_csv(file_path + '\\positive.csv', sep=';', encoding='utf-8', header=None)
     data_negative = pd.read_csv(file_path + '\\negative.csv', sep=';', encoding='utf-8', header=None)
     corpus = pd.concat((data_positive, data_negative), axis=0)
+    corpus = corpus.dropna()
+    corpus.columns = ["id", "tda", "tname", "ttext", "ttype", "trep", "trtw", "tfav", "tstcount", "tfoll", "tfrien",
+                      "listcount"]
+    corpus.drop(
+        columns=["id", "tda", "tname", "ttype", "trep", "trtw", "tfav", "tstcount", "tfoll", "tfrien", "listcount"],
+        axis=1)
 
-    texts = list(corpus[3])
-    labels = [1]*len(data_positive) + [0]*len(data_negative)
+    corpus['ttext_preproc'] = corpus.ttext.apply(lambda x: tweet_tokenizer(x, use_stop_words=True, stemming=False))
+    # corpus['ttext_preproc'] = corpus.ttext_preproc.apply(lambda x: ' '.join(x))
+
+    # corpus.to_csv(file_path + '\\preprocessed.csv', columns=["ttext" "ttext_preproc"])
+
+    texts = list(corpus.ttext_preproc)
+    labels = [1] * len(data_positive) + [0] * len(data_negative)
 
     return texts, labels
 
 
-def text_vectorization(texts, labels, embeddings_index):
+def text_vectorization(texts, labels, embeddings):
     """
     векторизация текстов с помощью предварительно обученных embeddings
+    :param embeddings: предварительно обученные embeddings
     :param labels: метки текстов
     :param texts: тексты
-    :param embeddings_index: предварительно обученные embeddings
     :return:
     """
+
     # tokenization
-    # texts = [tokenizer(text) for text in texts]
+    # texts = [tweet_tokenizer(text, use_stop_words=True, stemming=False) for text in texts]
 
     # распределение длин текстов
     # plt.style.use('ggplot')
@@ -95,7 +125,7 @@ def text_vectorization(texts, labels, embeddings_index):
     # plt.grid(True)
     # plt.show()
 
-    embed_len = len(embeddings_index['лес'])
+    embed_len = len(embeddings['лес'])
     text_len = 12
 
     y = np.asarray(labels)
@@ -103,8 +133,8 @@ def text_vectorization(texts, labels, embeddings_index):
 
     for i in range(len(texts)):
         for j in range(min(len(texts[i]), text_len)):
-            # if texts[i][j] in embeddings_index.keys():
-            X[i][j] = embeddings_index[texts[i][j]]
+            # if texts[i][j] in embeddings.index2word:
+            X[i][j] = embeddings[texts[i][j]]
 
     return X, y
 
@@ -143,10 +173,9 @@ def build_model_rnn(embed_len):
     return model
 
 
-def build_model_cnn(embed_len):
+def build_model_cnn():
     """
     построение модели cnn
-    :param embed_len: длина векторного представления
     :return:
     """
     model = Sequential()
@@ -215,44 +244,99 @@ def accuracy_graph(model_history):
     plt.show()
 
 
+def plot_confusion_matrix(cm, cmap=plt.cm.Blues, my_tags=[0, 1]):
+    """
+    построение матрицы ошибок в форме оттенков цветов
+    :param cm: вычисленная матрица ошибок
+    :param cmap: карта цветов
+    :param my_tags: метки классов
+    :return:
+    """
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title('Confusion matrix')
+    plt.colorbar()
+    tick_marks = np.arange(len(my_tags))
+    target_names = my_tags
+    plt.xticks(tick_marks, target_names)
+    plt.yticks(tick_marks, target_names)
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.show()
+
+
+def predict_tweet(tweet, predict_model, text_model):
+    """
+    определение тональности твита на обученной сети
+    :param text_model: обученная модель для представления текстов
+    :param predict_model: обученная модель
+    :param tweet: твит
+    :return: positive/negative
+    """
+    # preprocessing
+    tweet = tweet_tokenizer(tweet, use_stop_words=True, stemming=False)
+
+    # vectorization
+    text_len = 12
+    embed_len = len(own_model.wv['лес'])
+
+    X = np.zeros((1, text_len, embed_len), dtype=np.float16)
+
+    for i in range(min(len(tweet), text_len)):
+        X[0][i] = text_model.wv[tweet[i]]
+
+    # prediction
+    if np.round(predict_model.predict(X)) == 0:
+        answer = 'negative'
+    else:
+        answer = 'positive'
+
+    return answer
+
+
 if __name__ == "__main__":
 
     start_time = time.time()
 
     if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:
-        glove_dir = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\glove.6B'
-        imdb_dir: str = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\aclImdb'
-        train_dir = os.path.join(imdb_dir, 'train')
-        test_dir = os.path.join(imdb_dir, 'test')
-        imdb_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files\\imdb_mean.csv'
-        to_imdb_csv = 'C:\\Users\\Alexandr\\Documents\\NLP\\diplom\\datasets\\csv_files'
+        rubcova_corpus_path = 'D:\datasets\\rubcova_corpus'
+        rus_embeddings_path = 'D:\\datasets\\языковые модели\\'
+        save_arrays_path = 'D:\\datasets\\npy\\rubcova_corpus\\'
+        save_model_path = 'D:\\datasets\\models\\'
 
     else:
-        glove_dir = 'D:\\datasets\\glove.6B'
-        imdb_dir: str = 'D:\\datasets\\aclImdb'
-        train_dir = os.path.join(imdb_dir, 'train')
-        test_dir = os.path.join(imdb_dir, 'test')
-        imdb_csv = 'D:\\datasets\\csv_files\\imdb_mean.csv'
-        to_imdb_csv = 'D:\\datasets\\csv_files'
-        rubcova_corpus_path = 'D:\datasets\\rubcova_corpus'
-        rus_embeddings_path = 'D:\\datasets\\языковые модели\\180\\model.txt'
+        rubcova_corpus_path = 'D:\\datasets\\rubcova_corpus'
+        rus_embeddings_path = 'D:\\datasets\\языковые модели\\'
+        save_arrays_path = 'D:\\datasets\\npy\\rubcova_corpus\\'
+        save_model_path = 'D:\\datasets\\models\\'
 
     stop_words = set(stopwords.words('russian'))
 
     # загрузка rus embeddings
-    # embeddings_index = embeddings_download(rus_embeddings_path)
+    # embeddings_index = embeddings_download(rus_embeddings_path + '180\\model.bin')
 
     # загрузка данных
-    texts, labels = data_download(rubcova_corpus_path)
+    # texts, labels = data_download(rubcova_corpus_path)
 
     # обучаем модель самостоятельно с помощью gensim
-    texts = [tokenizer(text) for text in texts]
-    mdl_gensim = Word2Vec(texts, min_count=0, size=300)
+    # own_model = Word2Vec(texts, min_count=0, size=300)
+    # own_model.save(rus_embeddings_path + 'tweets.model')
+
+    # загрузка обученной текстовой модели
+    own_model = Word2Vec.load(rus_embeddings_path + 'tweets.model')
 
     # векторизация текстов
-    X, y = text_vectorization(texts, labels, mdl_gensim)
+    # X, y = text_vectorization(texts, labels, own_model)
 
-    # разделение выборки на тренировочную и тестовую
+    # сохранение векторизованных текстов для дальнейшего использования
+    # np.save(save_arrays_path + '\\X.npy', X)
+    # np.save(save_arrays_path + '\\y.npy', y)
+
+    # загрузка векторизованных текстов
+    X = np.load(save_arrays_path + '\\X.npy')
+    y = np.load(save_arrays_path + '\\y.npy')
+
+    # разделение выборки на  тренировочную и тестовую
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
     del X
 
@@ -264,7 +348,7 @@ if __name__ == "__main__":
     #
     # history = mdl.fit(X_train,
     #                   y_train,
-    #                   epochs=10,
+    #                   epochs=8,
     #                   batch_size=128,
     #                   validation_split=0.2)
     # loss_graph(history)
@@ -273,22 +357,30 @@ if __name__ == "__main__":
     # print(mdl.summary())
 
     # CNN
-    mdl = build_model_cnn(300)
+    # mdl = build_model_cnn()
+    #
+    # history = mdl.fit(X_train,
+    #                   y_train,
+    #                   epochs=15,
+    #                   batch_size=128,
+    #                   validation_split=0.2)
+    # loss_graph(history)
+    # accuracy_graph(history)
+    # print(mdl.evaluate(X_test, y_test))
+    # print(mdl.summary())
 
-    history = mdl.fit(X_train,
-                      y_train,
-                      epochs=10,
-                      batch_size=128,
-                      validation_split=0.2)
-    loss_graph(history)
-    accuracy_graph(history)
-    print(mdl.evaluate(X_test, y_test))
-    print(mdl.summary())
+    # mdl.save(save_model_path + 'cnn.h5')
+
+    # загрузка обученной предсказывающей модели
+    mdl = load_model(save_model_path + 'cnn.h5')
+
+    # проверка классификации
+    # tweet = "какой хороший сегодня день"
+    # print(tweet, predict_tweet(tweet, mdl, own_model))
+
+    # confusion matrix
+    cm = confusion_matrix(y_test, np.around(mdl.predict(X_test)))
+    plot_confusion_matrix(cm, cmap=plt.cm.Blues, my_tags=[0, 1])
 
     total_time = round((time.time() - start_time))
     print("Time elapsed: %s minutes %s seconds" % ((total_time // 60), round(total_time % 60)))
-
-    # generators
-    # https: // realpython.com / introduction - to - python - generators /
-    # https: // stanford.edu / ~shervine / blog / keras - how - to - generate - data - on - the - fly
-    # https: // www.tutorialspoint.com / python / file_seek.htm

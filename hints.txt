@@ -4,3 +4,23 @@
 - wor2vec example https://stackabuse.com/implementing-word2vec-with-gensim-library-in-python/
 - https://machinelearningmastery.com/develop-word-embeddings-python-gensim/
 - https://webdevblog.ru/gensim-rukovodstvo-dlya-nachinajushhih/ - руководство gensim
+- https://www.youtube.com/watch?v=U0LOSHY7U5Q&t=5050s - лекция яндекса про gensim/w2v
+    # generators
+    # https: // realpython.com / introduction - to - python - generators /
+    # https: // stanford.edu / ~shervine / blog / keras - how - to - generate - data - on - the - fly
+    # https: // www.tutorialspoint.com / python / file_seek.htm
+
+- pre-trained model downloading
+from gensim.models import Word2Vec, KeyedVectors
+model = KeyedVectors.load_word2vec_format(path, binary=True)
+
+- лемматизаторы для русского текста:
+https://www.kaggle.com/alxmamaev/how-to-easy-preprocess-russian-text - mystem
+https://stackoverflow.com/questions/45696028/snowballstemmer-for-russian-words-list - snowball
+
+- сравнение токенизаторов
+https://towardsdatascience.com/benchmarking-python-nlp-tokenizers-3ac4735100c5
+
+- spacy library
+https://stackabuse.com/python-for-nlp-tokenization-stemming-and-lemmatization-with-spacy-library/
+
