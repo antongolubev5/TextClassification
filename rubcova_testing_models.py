@@ -126,7 +126,7 @@ def text_vectorization(texts, labels, embeddings):
     # plt.show()
 
     embed_len = len(embeddings['лес'])
-    text_len = 12
+    text_len = 20
 
     y = np.asarray(labels)
     X = np.zeros((len(texts), text_len, embed_len), dtype=np.float16)
@@ -323,17 +323,17 @@ if __name__ == "__main__":
     # own_model.save(rus_embeddings_path + 'tweets.model')
 
     # загрузка обученной текстовой модели
-    own_model = Word2Vec.load(rus_embeddings_path + 'tweets.model')
+    # own_model = Word2Vec.load(rus_embeddings_path + 'tweets.model')
 
     # векторизация текстов
     # X, y = text_vectorization(texts, labels, own_model)
 
     # сохранение векторизованных текстов для дальнейшего использования
-    # np.save(save_arrays_path + '\\X.npy', X)
+    # np.save(save_arrays_path + '\\X_len20.npy', X)
     # np.save(save_arrays_path + '\\y.npy', y)
 
     # загрузка векторизованных текстов
-    X = np.load(save_arrays_path + '\\X.npy')
+    X = np.load(save_arrays_path + '\\X_len20.npy')
     y = np.load(save_arrays_path + '\\y.npy')
 
     # разделение выборки на  тренировочную и тестовую
@@ -357,22 +357,22 @@ if __name__ == "__main__":
     # print(mdl.summary())
 
     # CNN
-    # mdl = build_model_cnn()
-    #
-    # history = mdl.fit(X_train,
-    #                   y_train,
-    #                   epochs=15,
-    #                   batch_size=128,
-    #                   validation_split=0.2)
-    # loss_graph(history)
-    # accuracy_graph(history)
-    # print(mdl.evaluate(X_test, y_test))
-    # print(mdl.summary())
+    mdl = build_model_cnn()
 
-    # mdl.save(save_model_path + 'cnn.h5')
+    history = mdl.fit(X_train,
+                      y_train,
+                      epochs=5,
+                      batch_size=128,
+                      validation_split=0.2)
+    loss_graph(history)
+    accuracy_graph(history)
+    print(mdl.evaluate(X_test, y_test))
+    print(mdl.summary())
+
+    # mdl.save(save_model_path + 'cnn_many_layers.h5')
 
     # загрузка обученной предсказывающей модели
-    mdl = load_model(save_model_path + 'cnn.h5')
+    # mdl = load_model(save_model_path + 'cnn.h5')
 
     # проверка классификации
     # tweet = "какой хороший сегодня день"
