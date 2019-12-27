@@ -33,7 +33,8 @@ def tweet_tokenizer(text, use_stop_words, stemming):
 
     result = re.sub('((www\.[^\s]+)|(https?://[^\s]+))', 'URL', result)
     result = re.sub('@[^\s]+', 'USER', result)
-    result = re.sub('[^a-zA-Zа-яА-Я:):(]+', ' ', result)
+    # result = re.sub('[^a-zA-Zа-яА-Я:):(]+', ' ', result)
+    result = re.sub('[^a-zA-Zа-яА-Я]+', ' ', result)
 
     result = result.split(" ")
 
@@ -316,25 +317,25 @@ if __name__ == "__main__":
     # embeddings_index = embeddings_download(rus_embeddings_path + '180\\model.bin')
 
     # загрузка данных
-    # texts, labels = data_download(rubcova_corpus_path)
+    texts, labels = data_download(rubcova_corpus_path)
 
     # обучаем модель самостоятельно с помощью gensim
-    # own_model = Word2Vec(texts, min_count=0, size=300)
+    own_model = Word2Vec(texts, min_count=0, size=300)
     # own_model.save(rus_embeddings_path + 'tweets.model')
 
     # загрузка обученной текстовой модели
     # own_model = Word2Vec.load(rus_embeddings_path + 'tweets.model')
 
     # векторизация текстов
-    # X, y = text_vectorization(texts, labels, own_model)
+    X, y = text_vectorization(texts, labels, own_model)
 
     # сохранение векторизованных текстов для дальнейшего использования
     # np.save(save_arrays_path + '\\X_len20.npy', X)
     # np.save(save_arrays_path + '\\y.npy', y)
 
     # загрузка векторизованных текстов
-    X = np.load(save_arrays_path + '\\X_len20.npy')
-    y = np.load(save_arrays_path + '\\y.npy')
+    # X = np.load(save_arrays_path + '\\X_len20.npy')
+    # y = np.load(save_arrays_path + '\\y.npy')
 
     # разделение выборки на  тренировочную и тестовую
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, shuffle=True)
@@ -361,7 +362,7 @@ if __name__ == "__main__":
 
     history = mdl.fit(X_train,
                       y_train,
-                      epochs=5,
+                      epochs=10,
                       batch_size=128,
                       validation_split=0.2)
     loss_graph(history)
