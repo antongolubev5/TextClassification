@@ -6,14 +6,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from gensim.models import Word2Vec, KeyedVectors
-from keras import layers, models, Sequential
+from keras import Input, layers
+from keras.layers.embeddings import Embedding
+from keras.models import Sequential, Model
+from keras.preprocessing.sequence import pad_sequences
+from keras.preprocessing.text import Tokenizer
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 from nltk.tokenize import TweetTokenizer
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
-from keras.models import load_model
 
 
 def tweet_tokenizer(text, use_stop_words, stemming):
@@ -56,6 +59,17 @@ def tweet_tokenizer(text, use_stop_words, stemming):
     return output
 
 
+def preprocess_text_his(text):
+    text = text.lower().replace("ё", "е")
+    text = re.sub('((www\.[^\s]+)|(https?://[^\s]+))', 'URL', text)
+    text = re.sub('@[^\s]+', 'USER', text)
+    text = re.sub('[^a-zA-Zа-яА-Я1-9]+', ' ', text)
+    text = re.sub(' +', ' ', text)
+    output = ' '.split(text)
+
+    return output
+
+
 def embeddings_download(file_path):
     """
     загрузка представлений слов русскоязычной модели с rusvectores
@@ -88,11 +102,12 @@ def data_download(file_path):
     corpus = corpus.dropna()
     corpus.columns = ["id", "tda", "tname", "ttext", "ttype", "trep", "trtw", "tfav", "tstcount", "tfoll", "tfrien",
                       "listcount"]
-    corpus.drop(
+    corpus = corpus.drop(
         columns=["id", "tda", "tname", "ttype", "trep", "trtw", "tfav", "tstcount", "tfoll", "tfrien", "listcount"],
         axis=1)
 
     corpus['ttext_preproc'] = corpus.ttext.apply(lambda x: tweet_tokenizer(x, use_stop_words=True, stemming=False))
+    # corpus['ttext_preproc'] = corpus.ttext.apply(lambda x: preprocess_text_his(x))
     # corpus['ttext_preproc'] = corpus.ttext_preproc.apply(lambda x: ' '.join(x))
 
     # corpus.to_csv(file_path + '\\preprocessed.csv', columns=["ttext" "ttext_preproc"])
@@ -163,7 +178,7 @@ def build_model_rnn(embed_len):
     :param embed_len: длина векторного представления
     :return:
     """
-    model = models.Sequential()
+    model = Sequential()
     # model.add(layers.SimpleRNN(embed_len, return_sequences=True))
     # model.add(layers.SimpleRNN(embed_len, return_sequences=True))
     model.add(layers.SimpleRNN(embed_len))
@@ -192,6 +207,128 @@ def build_model_cnn():
     return model
 
 
+def build_model_multi_cnn(text_len, embed_len):
+    """
+    построение модели cnn
+    :return:
+    """
+    input_tensor = Input(shape=(text_len, embed_len))
+    branch_a = layers.Conv1D(32, 2, activation='relu')(input_tensor)
+    branch_a = layers.MaxPooling1D(2)(branch_a)
+    branch_a = layers.Conv1D(32, 3, activation='relu')(branch_a)
+    branch_a = layers.GlobalMaxPooling1D()(branch_a)
+
+    branch_b = layers.Conv1D(32, 3, activation='relu')(input_tensor)
+    branch_b = layers.MaxPooling1D(2)(branch_b)
+    branch_b = layers.Conv1D(32, 3, activation='relu')(branch_b)
+    branch_b = layers.GlobalMaxPooling1D()(branch_b)
+
+    branch_c = layers.Conv1D(32, 4, activation='relu')(input_tensor)
+    branch_c = layers.MaxPooling1D(2)(branch_c)
+    branch_c = layers.Conv1D(32, 2, activation='relu')(branch_c)
+    branch_c = layers.GlobalMaxPooling1D()(branch_c)
+
+    branch_d = layers.Conv1D(32, 5, activation='relu')(input_tensor)
+    branch_d = layers.MaxPooling1D(2)(branch_d)
+    branch_d = layers.Conv1D(32, 2, activation='relu')(branch_d)
+    branch_d = layers.GlobalMaxPooling1D()(branch_d)
+
+    output = layers.concatenate([branch_a, branch_b, branch_c, branch_d], axis=-1)
+
+    x = layers.Dropout(0.4)(output)
+    x = layers.Dense(30, activation='relu')(x)
+    output_tensor = layers.Dense(1, activation='sigmoid')(x)
+
+    model = Model(input_tensor, output_tensor)
+
+    model.compile(optimizer='rmsprop',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+    return model
+
+
+def build_model_multi_cnn_with_embed(text_len, embed_len, vocab_power, sentence_len, embedding_matrix):
+    """
+    построение модели cnn с начальным embedding слоем
+    :return:
+    """
+    tweet_input = Input(shape=(26,), dtype='int32')
+    tweet_encoder = Embedding(vocab_power, embed_len, input_length=sentence_len,
+                              weights=[embedding_matrix], trainable=False)(tweet_input)
+
+    x = layers.Dropout(0.2)(tweet_encoder)
+
+    branch_a = layers.Conv1D(32, 2, activation='relu')(x)
+    branch_a = layers.MaxPooling1D(2)(branch_a)
+    branch_a = layers.Conv1D(32, 3, activation='relu')(branch_a)
+    branch_a = layers.GlobalMaxPooling1D()(branch_a)
+
+    branch_b = layers.Conv1D(32, 3, activation='relu')(x)
+    branch_b = layers.MaxPooling1D(2)(branch_b)
+    branch_b = layers.Conv1D(32, 3, activation='relu')(branch_b)
+    branch_b = layers.GlobalMaxPooling1D()(branch_b)
+
+    branch_c = layers.Conv1D(32, 4, activation='relu')(x)
+    branch_c = layers.MaxPooling1D(2)(branch_c)
+    branch_c = layers.Conv1D(32, 2, activation='relu')(branch_c)
+    branch_c = layers.GlobalMaxPooling1D()(branch_c)
+
+    branch_d = layers.Conv1D(32, 5, activation='relu')(x)
+    branch_d = layers.MaxPooling1D(2)(branch_d)
+    branch_d = layers.Conv1D(32, 2, activation='relu')(branch_d)
+    branch_d = layers.GlobalMaxPooling1D()(branch_d)
+
+    output = layers.concatenate([branch_a, branch_b, branch_c, branch_d], axis=-1)
+
+    x = layers.Dropout(0.4)(output)
+    x = layers.Dense(30, activation='relu')(x)
+    output_tensor = layers.Dense(1, activation='sigmoid')(x)
+
+    model = Model(tweet_input, output_tensor)
+
+    model.compile(optimizer='rmsprop',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+    return model
+
+
+def get_sequences(tokenizer, x, sentence_len):
+    sequences = tokenizer.texts_to_sequences(x)
+    return pad_sequences(sequences, maxlen=sentence_len)
+
+
+def build_model_multi_cnn_his(text_len, embed_len):
+    """
+    построение модели cnn из статьи
+    :return:
+    """
+    input_tensor = Input(shape=(text_len, embed_len))
+    branch_a = layers.Conv1D(filters=1, kernel_size=2, padding='valid', activation='relu')(input_tensor)
+    branch_a = layers.GlobalMaxPooling1D()(branch_a)
+
+    branch_b = layers.Conv1D(filters=1, kernel_size=3, padding='valid', activation='relu')(input_tensor)
+    branch_b = layers.GlobalMaxPooling1D()(branch_b)
+
+    branch_c = layers.Conv1D(filters=1, kernel_size=4, padding='valid', activation='relu')(input_tensor)
+    branch_c = layers.GlobalMaxPooling1D()(branch_c)
+
+    branch_d = layers.Conv1D(filters=1, kernel_size=5, padding='valid', activation='relu')(input_tensor)
+    branch_d = layers.GlobalMaxPooling1D()(branch_d)
+
+    output = layers.concatenate([branch_a, branch_b, branch_c, branch_d], axis=-1)
+
+    x = layers.Dropout(0.2)(output)
+    x = layers.Dense(30, activation='relu')(x)
+    output_tensor = layers.Dense(1, activation='sigmoid')(x)
+
+    model = Model(input_tensor, output_tensor)
+
+    model.compile(optimizer='rmsprop',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+    return model
+
+
 def build_model_rnn_with_embedding(max_features, embed_len):
     """
     построение модели rnn со слоем embedding
@@ -199,7 +336,7 @@ def build_model_rnn_with_embedding(max_features, embed_len):
     :param embed_len: длина векторного представления
     :return:
     """
-    model = models.Sequential()
+    model = Sequential()
     model.add(layers.Embedding(max_features, embed_len))
     model.add(layers.LSTM(embed_len))
     model.add(layers.Dense(1, activation='sigmoid'))
@@ -358,7 +495,58 @@ if __name__ == "__main__":
     # print(mdl.summary())
 
     # CNN
-    mdl = build_model_cnn()
+    # mdl = build_model_cnn(300)
+    #
+    # history = mdl.fit(X_train,
+    #                   y_train,
+    #                   epochs=10,
+    #                   batch_size=128,
+    #                   validation_split=0.2)
+    # loss_graph(history)
+    # accuracy_graph(history)
+    # print(mdl.evaluate(X_test, y_test))
+    # print(mdl.summary())
+
+    # multi CNN
+    # mdl = build_model_multi_cnn(X_train.shape[1], X_train.shape[2])
+    #
+    # history = mdl.fit(X_train,
+    #                   y_train,
+    #                   epochs=10,
+    #                   batch_size=128,
+    #                   validation_split=0.2)
+    # loss_graph(history)
+    # accuracy_graph(history)
+    # print(mdl.evaluate(X_test, y_test))
+    # print(mdl.summary())
+
+    # multi CNN with embedding layer
+
+    # создаем и обучаем токенизатор
+    tokenizer = Tokenizer(num_words=100000)
+    tokenizer.fit_on_texts(X_train)
+
+    # отображаем каждый текст в массив идентификаторов токенов
+    x_train_seq = get_sequences(tokenizer, X_train)
+    x_test_seq = get_sequences(tokenizer, X_test)
+
+    # загружаем обученную модель word2vec
+    # w2v_model = Word2Vec.load(r'D:\datasets\языковые модели\tweets.model')
+    embed_len = own_model.vector_size
+    vocab_power = 100000
+    sentence_len = 26
+
+    # инициализируем матрицу embedding слоя нулями
+    embedding_matrix = np.zeros((vocab_power, embed_len))
+    # Добавляем NUM=100000 наиболее часто встречающихся слов из обучающей выборки в embedding слой
+    for word, i in tokenizer.word_index.items():
+        if i >= vocab_power:
+            break
+        if word in own_model.wv.vocab.keys():
+            embedding_matrix[i] = own_model.wv[word]
+
+    mdl = build_model_multi_cnn_with_embed(X_train.shape[1], X_train.shape[2], vocab_power, sentence_len,
+                                           embedding_matrix)
 
     history = mdl.fit(X_train,
                       y_train,
