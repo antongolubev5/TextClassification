@@ -31,6 +31,7 @@ def tweet_tokenizer(text, use_stop_words, stemming):
     токенизация (встроенный nltk.tweet tokenizer)
     """
 
+    stop_words = set(stopwords.words('russian'))
     tw_tok = TweetTokenizer()
     result = ' '.join(tw_tok.tokenize(text))
 
@@ -247,14 +248,14 @@ def build_model_multi_cnn(text_len, embed_len):
     return model
 
 
-def build_model_multi_cnn_with_embed(text_len, embed_len, vocab_power, sentence_len, embedding_matrix):
+def build_model_multi_cnn_with_embed(embed_len, vocab_power, sentence_len, embedding_matrix):
     """
     построение модели cnn с начальным embedding слоем
     :return:
     """
     tweet_input = Input(shape=(26,), dtype='int32')
     tweet_encoder = Embedding(vocab_power, embed_len, input_length=sentence_len,
-                              weights=[embedding_matrix], trainable=False)(tweet_input)
+                              weights=[embedding_matrix], trainable=True)(tweet_input)
 
     x = layers.Dropout(0.2)(tweet_encoder)
 
@@ -278,7 +279,7 @@ def build_model_multi_cnn_with_embed(text_len, embed_len, vocab_power, sentence_
     branch_d = layers.Conv1D(32, 2, activation='relu')(branch_d)
     branch_d = layers.GlobalMaxPooling1D()(branch_d)
 
-    output = layers.concatenate([branch_a, branch_b, branch_c, branch_d], axis=-1)
+    output = layers.concatenate([branch_a, branch_b, branch_c, branch_d], axis=1)
 
     x = layers.Dropout(0.4)(output)
     x = layers.Dense(30, activation='relu')(x)
@@ -293,6 +294,14 @@ def build_model_multi_cnn_with_embed(text_len, embed_len, vocab_power, sentence_
 
 
 def get_sequences(tokenizer, x, sentence_len):
+    """
+    text_to_seq - преобразовывает текст в последовательность чисел (номеров слов)
+    pad_sequences - добавляет нули в начале до необходимой длины текста
+    :param tokenizer: обученный токенизатор
+    :param x: текст твита
+    :param sentence_len: максимальная длина твита
+    :return:
+    """
     sequences = tokenizer.texts_to_sequences(x)
     return pad_sequences(sequences, maxlen=sentence_len)
 
@@ -448,8 +457,6 @@ if __name__ == "__main__":
         save_arrays_path = 'D:\\datasets\\npy\\rubcova_corpus\\'
         save_model_path = 'D:\\datasets\\models\\'
 
-    stop_words = set(stopwords.words('russian'))
-
     # загрузка rus embeddings
     # embeddings_index = embeddings_download(rus_embeddings_path + '180\\model.bin')
 
@@ -545,7 +552,7 @@ if __name__ == "__main__":
         if word in own_model.wv.vocab.keys():
             embedding_matrix[i] = own_model.wv[word]
 
-    mdl = build_model_multi_cnn_with_embed(X_train.shape[1], X_train.shape[2], vocab_power, sentence_len,
+    mdl = build_model_multi_cnn_with_embed(X_train.shape[0], X_train.shape[1], vocab_power, sentence_len,
                                            embedding_matrix)
 
     history = mdl.fit(X_train,

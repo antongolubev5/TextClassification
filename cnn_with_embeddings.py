@@ -22,22 +22,22 @@ if __name__ == "__main__":
     texts, labels = data_download(rubcova_corpus_path)
 
     # разделение данных на тренировочную и тестовую выборки
-    x_train, x_test, y_train, y_test = train_test_split(texts, labels, test_size=0.2, random_state=2)
+    X_train, X_test, y_train, y_test = train_test_split(texts, labels, test_size=0.2, random_state=2)
 
     # обучаем модель самостоятельно с помощью gensim
-    own_model = Word2Vec(texts, min_count=0, size=300)
+    own_model = Word2Vec(texts, size=200, window=5, min_count=3)
 
     embed_len = own_model.vector_size
     vocab_power = 100000
     sentence_len = 26
 
-    # создаем и обучаем токенизатор
+    # создаем и обучаем токенизатор: преобразует слова в числовые последовательности
     tokenizer = Tokenizer(num_words=100000)
     tokenizer.fit_on_texts(X_train)
 
     # отображаем каждый текст в массив идентификаторов токенов
-    x_train_seq = get_sequences(tokenizer, X_train)
-    x_test_seq = get_sequences(tokenizer, X_test)
+    x_train_seq = get_sequences(tokenizer, X_train, sentence_len)
+    x_test_seq = get_sequences(tokenizer, X_test, sentence_len)
 
     # инициализируем матрицу embedding слоя нулями
     embedding_matrix = np.zeros((vocab_power, embed_len))
@@ -50,10 +50,10 @@ if __name__ == "__main__":
             embedding_matrix[i] = own_model.wv[word]
 
     # model building
-    mdl = build_model_multi_cnn_with_embed(X_train.shape[1], X_train.shape[2], vocab_power, sentence_len,
+    mdl = build_model_multi_cnn_with_embed(embed_len, vocab_power, sentence_len,
                                            embedding_matrix)
 
-    history = mdl.fit(X_train,
+    history = mdl.fit(x_train_seq,
                       y_train,
                       epochs=10,
                       batch_size=128,
