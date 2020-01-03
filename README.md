@@ -23,3 +23,4 @@ http://study.mokoron.com/
 * RNN
 * LSTM
 * CNN
+* CNN multi branches
