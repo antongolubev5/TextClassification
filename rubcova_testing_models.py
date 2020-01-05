@@ -97,8 +97,8 @@ def data_download(file_path):
     :param file_path: директория с двумя csv-файлами
     :return: список raw текстов и список меток
     """
-    data_positive = pd.read_csv(file_path + '\\positive.csv', sep=';', encoding='utf-8', header=None)
-    data_negative = pd.read_csv(file_path + '\\negative.csv', sep=';', encoding='utf-8', header=None)
+    data_positive = pd.read_csv(file_path + '/positive.csv', sep=';', encoding='utf-8', header=None)
+    data_negative = pd.read_csv(file_path + '/negative.csv', sep=';', encoding='utf-8', header=None)
     corpus = pd.concat((data_positive, data_negative), axis=0)
     corpus = corpus.dropna()
     corpus.columns = ["id", "tda", "tname", "ttext", "ttype", "trep", "trtw", "tfav", "tstcount", "tfoll", "tfrien",

@@ -3,18 +3,18 @@ from rubcova_testing_models import *
 if __name__ == "__main__":
 
     start_time = time.time()
-
-    if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:
-        rubcova_corpus_path = 'D:\datasets\\rubcova_corpus'
-        rus_embeddings_path = 'D:\\datasets\\языковые модели\\'
-        save_arrays_path = 'D:\\datasets\\npy\\rubcova_corpus\\'
-        save_model_path = 'D:\\datasets\\models\\'
-
-    else:
-        rubcova_corpus_path = 'D:\\datasets\\rubcova_corpus'
-        rus_embeddings_path = 'D:\\datasets\\языковые модели\\'
-        save_arrays_path = 'D:\\datasets\\npy\\rubcova_corpus\\'
-        save_model_path = 'D:\\datasets\\models\\'
+    #
+    # if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:
+    #     rubcova_corpus_path = 'D:\datasets\\rubcova_corpus'
+    #     rus_embeddings_path = 'D:\\datasets\\языковые модели\\'
+    #     save_arrays_path = 'D:\\datasets\\npy\\rubcova_corpus\\'
+    #     save_model_path = 'D:\\datasets\\models\\'
+    #
+    # else:
+    rubcova_corpus_path = '/media/anton/B07CCF367CCEF65E/datasets/rubcova_corpus'
+    rus_embeddings_path = '/media/anton/B07CCF367CCEF65E/datasets/языковые модели/'
+    save_arrays_path = '/media/anton/B07CCF367CCEF65E/datasets/npy/rubcova_corpus/'
+    save_model_path = '/media/anton/B07CCF367CCEF65E/datasets/models/'
 
     stop_words = set(stopwords.words('russian'))
 
