@@ -11,10 +11,10 @@ if __name__ == "__main__":
     #     save_model_path = 'D:\\datasets\\models\\'
     #
     # else:
-    rubcova_corpus_path = '/media/anton/B07CCF367CCEF65E/datasets/rubcova_corpus'
-    rus_embeddings_path = '/media/anton/B07CCF367CCEF65E/datasets/языковые модели/'
-    save_arrays_path = '/media/anton/B07CCF367CCEF65E/datasets/npy/rubcova_corpus/'
-    save_model_path = '/media/anton/B07CCF367CCEF65E/datasets/models/'
+    rubcova_corpus_path = '/media/anton/ssd2/data/datasets/rubcova_corpus'
+    rus_embeddings_path = '/media/anton/ssd2/data/datasets/языковые модели/'
+    save_arrays_path = '/media/anton/ssd2/data/datasets/npy/rubcova_corpus/'
+    save_model_path = '/media/anton/ssd2/data/datasets/models/'
 
     stop_words = set(stopwords.words('russian'))
 
