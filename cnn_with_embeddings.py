@@ -2,6 +2,11 @@ from rubcova_testing_models import *
 
 if __name__ == "__main__":
 
+    # gpu config
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
+    config.log_device_placement = True  # to log device placement (on which device the operation ran)
+
     start_time = time.time()
     #
     # if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:

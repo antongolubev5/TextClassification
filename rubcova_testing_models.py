@@ -17,6 +17,7 @@ from nltk.tokenize import TweetTokenizer
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
+import tensorflow as tf
 
 
 def tweet_tokenizer(text, use_stop_words, stemming):
