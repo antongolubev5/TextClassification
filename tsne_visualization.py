@@ -23,12 +23,14 @@ def tsne_plot(labels, tokens, classes, clusters):
         plt.annotate(labels[i], alpha=0.75, xy=(x[i], y[i]), xytext=(5, 2),
                      textcoords='offset points', ha='right', va='bottom', size=10)
     plt.grid(True)
+    plt.savefig('tsne1.png')
     plt.show()
 
 
 if __name__ == "__main__":
     # загрузка обученной модели
-    model = Word2Vec.load('/media/anton/ssd2/data/datasets/языковые модели/habr_w2v/tweets_model.w2v')
+    # model = Word2Vec.load('/media/anton/ssd2/data/datasets/языковые модели/habr_w2v/tweets_model.w2v')
+    model = Word2Vec.load('/media/anton/ssd2/data/datasets/языковые модели/tweets_model.w2v')
 
     labels = []
     tokens = []

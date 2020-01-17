@@ -50,15 +50,18 @@ def tweet_tokenizer(text, use_stop_words, stemming):
     stemmer = SnowballStemmer("russian")
 
     if use_stop_words and stemming:
-        output = [stemmer.stem(element) for element in result if not (element in stop_words)]
+        result = [stemmer.stem(element) for element in result if not (element in stop_words)]
 
     if use_stop_words:
-        output = [element.lower() for element in result if not (element in stop_words)]
+        result = [element.lower() for element in result if not (element in stop_words)]
 
     if stemming:
-        output = [stemmer.stem(element) for element in result]
+        result = [stemmer.stem(element) for element in result]
 
-    return output
+    else:
+        result = [element.lower() for element in result]
+
+    return result
 
 
 def preprocess_text_his(text):
@@ -446,17 +449,17 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-    if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:
-        rubcova_corpus_path = 'D:\datasets\\rubcova_corpus'
-        rus_embeddings_path = 'D:\\datasets\\языковые модели\\'
-        save_arrays_path = 'D:\\datasets\\npy\\rubcova_corpus\\'
-        save_model_path = 'D:\\datasets\\models\\'
-
-    else:
-        rubcova_corpus_path = 'D:\\datasets\\rubcova_corpus'
-        rus_embeddings_path = 'D:\\datasets\\языковые модели\\'
-        save_arrays_path = 'D:\\datasets\\npy\\rubcova_corpus\\'
-        save_model_path = 'D:\\datasets\\models\\'
+    # if 'DESKTOP-TF87PFA' in os.environ['COMPUTERNAME']:
+    #     rubcova_corpus_path = 'D:\datasets\\rubcova_corpus'
+    #     rus_embeddings_path = 'D:\\datasets\\языковые модели\\'
+    #     save_arrays_path = 'D:\\datasets\\npy\\rubcova_corpus\\'
+    #     save_model_path = 'D:\\datasets\\models\\'
+    #
+    # else:
+    rubcova_corpus_path = '/media/anton/ssd2/data/datasets/rubcova_corpus'
+    rus_embeddings_path = '/media/anton/ssd2/data/datasets/языковые модели/'
+    save_arrays_path = '/media/anton/ssd2/data/datasets/npy/rubcova_corpus/'
+    save_model_path = '/media/anton/ssd2/data/datasets/models/'
 
     # загрузка rus embeddings
     # embeddings_index = embeddings_download(rus_embeddings_path + '180\\model.bin')
@@ -466,7 +469,7 @@ if __name__ == "__main__":
 
     # обучаем модель самостоятельно с помощью gensim
     own_model = Word2Vec(texts, min_count=0, size=300)
-    # own_model.save(rus_embeddings_path + 'tweets.model')
+    own_model.save('/media/anton/ssd2/data/datasets/языковые модели/tweets_model.w2v')
 
     # загрузка обученной текстовой модели
     # own_model = Word2Vec.load(rus_embeddings_path + 'tweets.model')

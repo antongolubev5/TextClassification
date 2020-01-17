@@ -30,7 +30,8 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(texts, labels, test_size=0.2, random_state=2)
 
     # обучаем модель самостоятельно с помощью gensim
-    own_model = Word2Vec(texts, size=200, window=5, min_count=3)
+    # own_model = Word2Vec(texts, size=200, window=5, min_count=3)
+    own_model = Word2Vec.load('/media/anton/ssd2/data/datasets/языковые модели/habr_w2v/tweets_model.w2v')
 
     embed_len = own_model.vector_size
     vocab_power = 100000
