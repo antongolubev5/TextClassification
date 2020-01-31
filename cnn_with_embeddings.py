@@ -59,6 +59,8 @@ if __name__ == "__main__":
     mdl = build_model_multi_cnn_with_embed(embed_len, vocab_power, sentence_len,
                                            embedding_matrix)
 
+    print(mdl.summary())
+
     history = mdl.fit(x_train_seq,
                       y_train,
                       epochs=10,

@@ -184,8 +184,8 @@ def build_model_rnn(embed_len):
     :return:
     """
     model = Sequential()
-    # model.add(layers.SimpleRNN(embed_len, return_sequences=True))
-    # model.add(layers.SimpleRNN(embed_len, return_sequences=True))
+    model.add(layers.SimpleRNN(embed_len, return_sequences=True))
+    model.add(layers.SimpleRNN(embed_len, return_sequences=True))
     model.add(layers.SimpleRNN(embed_len))
     model.add(layers.Dense(1, activation='sigmoid'))
     model.compile(optimizer='rmsprop',
@@ -374,6 +374,7 @@ def loss_graph(model_history):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
+    plt.save("loss_cnn")
     plt.show()
 
 
@@ -392,6 +393,7 @@ def accuracy_graph(model_history):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
+    plt.save("acc_cnn")
     plt.show()
 
 
@@ -414,6 +416,33 @@ def plot_confusion_matrix(cm, cmap=plt.cm.Blues, my_tags=[0, 1]):
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.show()
+
+
+def plot_confusion_matrix_new(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.winter):
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title, fontsize=30)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, fontsize=20)
+    plt.yticks(tick_marks, classes, fontsize=20)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt), horizontalalignment="center",
+                 color="white" if cm[i, j] < thresh else "black", fontsize=40)
+
+    plt.tight_layout()
+    plt.ylabel('True label', fontsize=30)
+    plt.xlabel('Predicted label', fontsize=30)
+
+    return plt
 
 
 def predict_tweet(tweet, predict_model, text_model):
@@ -556,8 +585,10 @@ if __name__ == "__main__":
         if word in own_model.wv.vocab.keys():
             embedding_matrix[i] = own_model.wv[word]
 
-    mdl = build_model_multi_cnn_with_embed(X_train.shape[0], X_train.shape[1], vocab_power, sentence_len,
-                                           embedding_matrix)
+    # mdl = build_model_multi_cnn_with_embed(X_train.shape[0], X_train.shape[1], vocab_power, sentence_len,
+    #                                        embedding_matrix)
+
+    mdl = build_model_rnn()
 
     history = mdl.fit(X_train,
                       y_train,

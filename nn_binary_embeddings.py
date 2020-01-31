@@ -19,6 +19,7 @@ from sklearn.preprocessing import StandardScaler
 from tok import word_tokenize
 from keras import models
 from keras import layers
+from keras.utils import plot_model
 
 
 def tokenizer(text):
@@ -303,6 +304,8 @@ if __name__ == "__main__":
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
     model.fit(X_train, y_train, epochs=4, batch_size=512)
+    plot_model(model, to_file='pictures/dnn_arch.png')
+
     results = model.evaluate(X_test, y_test)
 
     total_time = round((time.time() - start_time))
